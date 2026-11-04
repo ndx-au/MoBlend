@@ -1,5 +1,7 @@
 # v0.2.0-alpha.1 release verification
 
+**Current status: published GitHub prerelease; not Latest; repository remains private.** Earlier pending statements below describe preparation checkpoints.
+
 Date: 2026-11-05. Owner authorized publishing the alpha prerelease. Repository ndx-au/MoBlend is private; visibility remains unchanged.
 
 ## Source qualification before tag
@@ -33,3 +35,17 @@ Source/tag push succeeded. Draft GitHub prerelease has the native tar.gz and SHA
 ## CI observation follow-up before publication
 
 Tag CI `41894852743` passed. Parallel main CI `41894853461` exposed immediate Linux child-state assertion timing (CLI signal test); retry exposed the same assumption in Doctor's probe test. Publication stayed draft while a test-only main follow-up added a one-second bounded terminal-state wait (no descendant-liveness assertion removed). Twenty repeated runs passed 160 tests/subtests; scoped race run passed 8; full Go/Blender suite again passed 134. Rebuilt CLI with identical release flags compared byte-identical to the official tagged binary. Main follow-up CI and actual publication are still pending; source-test limitation is disclosed in draft release notes. Tag and archive remain immutable.
+
+
+## Publication completed
+
+- Release: https://github.com/ndx-au/MoBlend/releases/tag/v0.2.0-alpha.1
+- GitHub published timestamp: 2026-11-04T19:22:36Z (2026-11-05 Australia/Sydney).
+- Remote metadata confirmed: isDraft=false, isPrerelease=true; repository isPrivate=true; no latest stable release endpoint points to this alpha.
+- Exactly two uploaded assets: blendctl_0.2.0-alpha.1_linux_amd64.tar.gz and SHA256SUMS. Server SHA-256 digests match the verified local files; downloaded draft bytes and extracted binary already verified before publishing.
+- Annotated remote tag object 48fa76984f9b5efc6cbb5c426f140fa838dd785a peels to immutable source 1ccc0038c9e9313ec59a709672fccd3c6669adfa. No tag or release asset was overwritten.
+- Tag CI PASS: https://github.com/ndx-au/MoBlend/actions/runs/41894852743
+- Test-only follow-up commit 0e8d42ac1b6052e5269466691049ac4226df8801 pushed on main; CI PASS: https://github.com/ndx-au/MoBlend/actions/runs/41896087094. Application executable remained byte-identical to the tagged binary. The older parallel branch timing failures remain visible in history and are disclosed in release notes.
+- Publication command: `gh release edit v0.2.0-alpha.1 --draft=false --prerelease --latest=false --verify-tag` (via rtk), exit 0. Post-publication GitHub metadata/assets/digests independently queried and asserted.
+
+The first alpha release is complete within its Linux/beta-runtime scope. Stable Blender, external model/onboarding qualification, broader visual approval and additional platforms remain follow-ups, not hidden completed gates. No license, repository visibility or supported-platform expansion was made.

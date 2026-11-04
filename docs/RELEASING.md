@@ -9,9 +9,9 @@ the evidence, not a claim that every supported path is defective.
 The earlier `0.1.0-rc1` label records a local packaging milestone. It was not a
 published release or proof that product qualification was finished. Preserve
 that history; recommend **`v0.2.0-alpha.1`** for the first public alpha rather than
-renaming artifacts or moving an existing tag. The owner has authorized that alpha
-prerelease for the existing private GitHub repository. Publication does not change
-repository visibility. Tags are created explicitly during the release workflow.
+renaming artifacts or moving an existing tag. That alpha is now [published](https://github.com/ndx-au/MoBlend/releases/tag/v0.2.0-alpha.1)
+as a prerelease in the existing private GitHub repository. Repository visibility
+is unchanged. The workflow below applies to subsequent explicitly chosen versions.
 
 ## Version policy
 

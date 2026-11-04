@@ -1,9 +1,10 @@
 # Project state
 
 Updated: 2026-11-05
-Status: Roadmap phases 0–8 CLI/composition work executed on Linux amd64. Phase 5 proposed model repair-loop gate remains unmet/blocked; fixture smoke and visual review are not model-authoring evidence. RC `0.1.0-rc1` baseline retained; modularity (Phase 7) and independent shots (Phase 8) implemented with evidence.
-Active work: authorized v0.2.0-alpha.1 release. Follow-up fixes and native packaging verified; publication gates recorded in `.planning/releases/0.2.0-alpha.1/VERIFICATION.md`. The last independent Gauntlet verdict predates the fixes and remains historical.
-Next action: build/verify the clean annotated-tag package and publish the authorized GitHub prerelease, preserving private repository visibility. Model evaluation, HD review and non-Linux support remain separate evidence gaps. Release v0.2.0-alpha.1 publication is now authorized and being prepared.
+Status: v0.2.0-alpha.1 published as a Linux amd64 prerelease in the private GitHub repository. Roadmap phases 0–8 CLI/composition work executed on Linux amd64. Phase 5 proposed model repair-loop gate remains unmet/blocked; fixture smoke and visual review are not model-authoring evidence. RC `0.1.0-rc1` baseline retained; modularity (Phase 7) and independent shots (Phase 8) implemented with evidence.
+Active phase: none. Release v0.2.0-alpha.1 is published with verified native archive/checksums; audit: `.planning/releases/0.2.0-alpha.1/VERIFICATION.md`. The release tag remains at 1ccc0038c9e9313ec59a709672fccd3c6669adfa; main includes a test-only cancellation timing follow-up with green CI.
+Next action: controlled alpha evaluation, stable Blender qualification, measured model-authoring/onboarding and broader visual review. Other platforms remain unclaimed. Repository remains private; this alpha is not Latest. The historical independent Gauntlet verdict predates the fixes.
+
 
 
 ## Completed
@@ -20,7 +21,7 @@ Roadmap phases 0–8 implementation (see phase VERIFICATION files; Phase 5 propo
 | Independent shots (`SHOT-01`–`03`) | met — Phase 8 VERIFICATION |
 | LLM authoring eval | still blocked / not claimed |
 | macOS/Windows | not claimed |
-| GitHub alpha prerelease | owner authorized 2026-11-05; preparation in progress; repository stays private |
+| GitHub alpha prerelease | **published v0.2.0-alpha.1** — verified assets, not Latest; private repository |
 
 ## Modularity decision — 2026-11-04
 
@@ -53,3 +54,9 @@ Recommended current maturity: alpha; suggested next public version `v0.2.0-alpha
 ## Alpha.1 release preparation — 2026-11-05
 
 Owner authorized v0.2.0-alpha.1. Finalize pending native packaging/docs in a clean source commit, run fresh qualification, annotate the tag, build with --release --verify-render, verify extracted package, then publish a GitHub prerelease with tar.gz/SHA256SUMS. Repository is private and its visibility will be preserved. No stable/platform/model/HD claims or new project license are added. Plan/context: `.planning/releases/0.2.0-alpha.1/`.
+
+## Alpha.1 published — 2026-11-05
+
+Release: https://github.com/ndx-au/MoBlend/releases/tag/v0.2.0-alpha.1 . Exact tagged source 1ccc0038c9e9313ec59a709672fccd3c6669adfa; native Linux amd64 tar.gz and SHA256SUMS uploaded/downloaded/verified, preview + full tiny sequence + saved-scene reopen passed. GitHub confirms prerelease=true, draft=false, repository private, not Latest.
+
+Tag CI passed. Parallel branch CI exposed two immediate child-state test observations; test-only main follow-up 0e8d42a uses bounded termination waits, passed 160 repeated tests/subtests, 8 race checks, full 134-test Go/Blender suite and hosted CI. Recompiled executable matched the immutable tagged binary; tag/assets were not replaced. Limitation/follow-up disclosed in notes. Publication audit: `.planning/releases/0.2.0-alpha.1/VERIFICATION.md`; Dot Progress M006.004.

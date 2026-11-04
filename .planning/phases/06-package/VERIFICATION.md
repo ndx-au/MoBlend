@@ -42,3 +42,8 @@ Extended the existing script to emit versioned native tar.gz packages, SHA256SUM
 ## Alpha.1 source qualification — 2026-11-05
 
 Owner authorized the alpha.1 GitHub prerelease in the existing private repository. Fresh full Go/Blender suite passed 134 tests/subtests; fmt/vet/Bash syntax and executed packaging acceptance passed. Pending immutable-tag package and draft-download checks are tracked in [release verification](../../releases/0.2.0-alpha.1/VERIFICATION.md). Earlier statements about publication authorization describe earlier sessions, not a current blocker.
+
+
+## Alpha.1 published — 2026-11-05
+
+[v0.2.0-alpha.1](https://github.com/ndx-au/MoBlend/releases/tag/v0.2.0-alpha.1) published as a GitHub prerelease with native Linux amd64 tar.gz and SHA256SUMS. Repository stays private; alpha is not Latest. Tagged build was extracted, rendered (still and full tiny sequence), reopened, and its draft downloads checked byte-for-byte. Tag CI and a disclosed test-only main follow-up CI passed. No tag/asset overwrite or unsupported stable/platform/model claims. Full evidence and CI timing-test chronology: [release verification](../../releases/0.2.0-alpha.1/VERIFICATION.md).
