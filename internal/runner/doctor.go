@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"regexp"
 	"strings"
 	"time"
@@ -44,14 +43,13 @@ func Doctor(ctx context.Context, blender string) (DoctorReport, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, blender, "--version")
-	out, err := cmd.CombinedOutput()
+	result, err := runCommand(ctx, blender, []string{"--version"}, "", nil)
 	if err != nil {
 		rep.ErrorCode = "ENV_BLENDER_UNUSABLE"
 		rep.Message = fmt.Sprintf("blender --version failed: %v", err)
-		return rep, fmt.Errorf("%s", rep.Message)
+		return rep, fmt.Errorf("blender --version failed: %w", err)
 	}
-	text := string(out)
+	text := result.Stdout
 	rep.VersionLine = firstLine(text)
 	family := parseFamily(text)
 	if family == "" {

@@ -31,7 +31,7 @@
         "additionalProperties": false,
         "required": ["id", "entry"],
         "properties": {
-          "id": { "type": "string", "minLength": 1 },
+          "id": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
           "entry": { "type": "string", "minLength": 1 }
         }
       }

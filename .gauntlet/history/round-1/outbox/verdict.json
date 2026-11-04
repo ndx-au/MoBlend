@@ -1,0 +1,43 @@
+{
+  "verdict": "revise",
+  "round": 1,
+  "maxRounds": 3,
+  "coverage": [
+    {
+      "persona": "correctness",
+      "total": 47,
+      "critical": 0,
+      "high": 3,
+      "count": 10
+    },
+    {
+      "persona": "tests",
+      "total": 47,
+      "critical": 0,
+      "high": 3,
+      "count": 10
+    },
+    {
+      "persona": "failure",
+      "total": 40,
+      "critical": 0,
+      "high": 3,
+      "count": 8
+    },
+    {
+      "persona": "concurrency",
+      "total": 29,
+      "critical": 0,
+      "high": 2,
+      "count": 6
+    },
+    {
+      "persona": "security",
+      "total": 22,
+      "critical": 0,
+      "high": 1,
+      "count": 5
+    }
+  ],
+  "capped": false
+}

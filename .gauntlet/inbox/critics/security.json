@@ -1,0 +1,22 @@
+{
+  "persona": "security",
+  "plan_hash": "364610b4ffb66c54d77b3b58ae284459227c60c11e029b5c8a35269bc31a2856",
+  "findings": [
+    {
+      "id": "dispatch-unbounded-input-read",
+      "severity": "medium",
+      "location": "internal/project/input.go:LoadSceneOrProject; internal/project/load.go:readBounded",
+      "bug": "The public validate/compile/preview/render loader still calls os.ReadFile and DetectKind on the entire root input before the bounded project loader runs. Thus the round-one bounded-read repair does not bound the public entry point. Neither path requires a regular input file. A CLI probe with a 32 MiB whitespace-padded manifest returned LIM_FILE_BYTES only after reaching 37,760 KiB peak RSS; a FIFO root input remained blocked until the probe killed it after one second.",
+      "predicted": "An oversized agent-authored or supplied manifest can exhaust CLI memory before receiving its documented size diagnostic, and a special-file input can hang before any Blender timeout or cancellation context exists. These scenarios need no concurrent hostile filesystem replacement.",
+      "fix_hint": "Use one regular-file, size-bounded root-input read before DetectKind, then pass the same snapshot into project resolution; reject nonregular module inputs as well."
+    },
+    {
+      "id": "unbounded-child-log-capture",
+      "severity": "medium",
+      "location": "internal/runner/runner.go:Run; internal/runner/doctor.go:Doctor; .planning/ROADMAP.md:Phase 4 task 2",
+      "bug": "Execution still uses exec.Cmd.CombinedOutput with no output cap in both the render launcher and version probe. The repair explicitly acknowledges in-memory logs, but the roadmap requires bounded logs; no bound or truncation path exists. Run also copies the captured bytes into Result.Stdout and formatted errors.",
+      "predicted": "A noisy or malfunctioning Blender run can consume arbitrary orchestrator memory during the five-minute job window, potentially terminating the CLI before it can persist its failed manifest. A timeout limits elapsed time, not bytes produced.",
+      "fix_hint": "Replace CombinedOutput with a capped log sink that drains both streams while retaining a bounded diagnostic tail and explicit truncation metadata; use it for Doctor too."
+    }
+  ]
+}

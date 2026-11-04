@@ -1,0 +1,22 @@
+{
+  "persona": "concurrency",
+  "plan_hash": "364610b4ffb66c54d77b3b58ae284459227c60c11e029b5c8a35269bc31a2856",
+  "findings": [
+    {
+      "id": "orphan-namespace-map-order",
+      "severity": "medium",
+      "location": "internal/project/resolve.go:resolveRef; resolveManifest allListed loading",
+      "bug": "The new all-listed graph check leaves orphan modules in loaded, but namespace uniqueness and moduleMaps are built only for the entry closure. resolveRef searches the entire loaded map by namespace, so an orphan with the namespace of an imported closure module can win randomized map iteration and return an unknown-ID error instead of resolving the explicitly imported module.",
+      "predicted": "Reproduced without edits or concurrency: copy title_modular, move its text animation to main with target_id title:text, and list an unimported empty module with namespace title. Fifty CLI validate calls on the unchanged project produced 44 successes and 6 SEM_TRACK_TARGET failures. Non-shot compilation and all-shots validation therefore depend on map iteration order rather than explicit import identity.",
+      "fix_hint": "Resolve alias references directly to the imported module ID and its moduleMaps entry; keep orphan validation separate from the selected closure lookup, and add a repeated-load regression with a same-namespace orphan."
+    },
+    {
+      "id": "doctor-cancel-pipe-hang",
+      "severity": "medium",
+      "location": "internal/runner/doctor.go:45-48 (Doctor), called by internal/runner/apply.go:98",
+      "bug": "Run now kills its process group and bounds pipe waiting, but the preceding --version probe uses a separate exec.CommandContext with neither configureProcessTree nor WaitDelay. A descendant retaining stdout/stderr keeps CombinedOutput blocked after cancellation or the nominal 15-second probe timeout. Bounded reproduction against the current built CLI: configure MOBLEND_BLENDER to a wrapper whose --version starts sleep 60 and waits, start preview, send SIGTERM after the child is ready. The CLI remained blocked after one second and the child was still alive; manually killing that child allowed cancellation and the failed marker to finish. The existing Run/CLI cancellation tests passed but exercise a fast --version branch.",
+      "predicted": "Reproduced with a configured shell Blender wrapper whose --version branch starts sleep 60 and waits. After the probe signaled readiness, SIGINT to blendctl preview did not return within 3 seconds; the sleep child remained alive until explicit cleanup. The nominal 15-second Doctor timeout has the same pipe-wait problem, so preview/render cancellation can hang through the wrapper child lifetime and delay the failed marker.",
+      "fix_hint": "Apply the same dedicated process-group cancellation and bounded pipe wait to Doctor subprocesses, and extend the CLI signal regression to cancel while --version is running with a descendant."
+    }
+  ]
+}

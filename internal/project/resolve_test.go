@@ -43,7 +43,7 @@ func TestModularMatchesFlat(t *testing.T) {
 	}
 }
 
-func TestDeterminismImportReorderAndRelocate(t *testing.T) {
+func TestDeterminismSerializationAndRelocate(t *testing.T) {
 	root := repoRoot(t)
 	src := filepath.Join(root, "examples/projects/title_modular")
 	a := t.TempDir()
@@ -51,7 +51,7 @@ func TestDeterminismImportReorderAndRelocate(t *testing.T) {
 	copyTree(t, src, a)
 	copyTree(t, src, b)
 
-	// Reorder imports in copy B entry.
+	// Re-serialize copy B to change formatting and key order.
 	entryPath := filepath.Join(b, "main.entry.json")
 	raw, err := os.ReadFile(entryPath)
 	if err != nil {
@@ -60,9 +60,6 @@ func TestDeterminismImportReorderAndRelocate(t *testing.T) {
 	var doc map[string]any
 	if err := json.Unmarshal(raw, &doc); err != nil {
 		t.Fatal(err)
-	}
-	doc["imports"] = []any{
-		map[string]any{"alias": "title", "module": "title"},
 	}
 	rewritten, err := json.MarshalIndent(doc, "", "  ")
 	if err != nil {
@@ -109,6 +106,7 @@ func TestRejectMissing(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected missing")
 	}
+	requireCode(t, err, "PROJ_FILE_MISSING")
 }
 
 func TestRejectEscape(t *testing.T) {
@@ -120,7 +118,7 @@ func TestRejectEscape(t *testing.T) {
 	if !ok {
 		t.Fatalf("%T %v", err, err)
 	}
-	if el[0].Code != "PROJ_PATH_ESCAPE" && el[0].Code != "PROJ_FILE_MISSING" {
+	if el[0].Code != "PROJ_PATH_ESCAPE" {
 		t.Fatalf("code %s", el[0].Code)
 	}
 }
@@ -221,20 +219,12 @@ func TestAggregateObjectLimit(t *testing.T) {
 	if !ok {
 		t.Fatalf("%v", err)
 	}
-	found := false
 	for _, d := range el {
-		if d.Code == "LIM_OBJECTS" || d.Code == "SEM_TOO_MANY_OBJECTS" || d.Code == "LIM_OBJECT_COUNT" {
-			found = true
-		}
-		// accept any limit-style object overflow code
-		if len(d.Code) >= 3 && (d.Code[:3] == "LIM" || d.Message != "") &&
-			(d.Pointer == "/objects" || contains(d.Message, "32") || contains(d.Message, "object")) {
-			found = true
+		if d.Code == "LIM_OBJECTS" {
+			return
 		}
 	}
-	if !found {
-		t.Fatalf("expected object limit diagnostic, got %v", el)
-	}
+	t.Fatalf("expected LIM_OBJECTS, got %v", el)
 }
 
 func TestSourceAwareDiagnostic(t *testing.T) {
@@ -476,15 +466,4 @@ func copyTree(t *testing.T, src, dst string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-}
-
-func contains(s, sub string) bool {
-	return len(sub) == 0 || (len(s) >= len(sub) && (s == sub || len(s) > 0 && (func() bool {
-		for i := 0; i+len(sub) <= len(s); i++ {
-			if s[i:i+len(sub)] == sub {
-				return true
-			}
-		}
-		return false
-	})()))
 }

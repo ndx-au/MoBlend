@@ -1,0 +1,86 @@
+{
+  "persona": "correctness",
+  "plan_hash": "915d4f971c9d7d87f3eb48188232c1df13070239b936944c064d2554fe636db0",
+  "findings": [
+    {
+      "id": "mod06-blender-equiv-existence-only",
+      "severity": "high",
+      "location": "internal/runner/project_integration_test.go:TestModularFlatPreviewEquivalence / ROADMAP Phase 7 gate / MOD-06",
+      "bug": "Phase 7 gate and MOD-06 require modular≡flat Blender scene properties and render equivalence; the recorded Blender test only asserts preview.png/.blend exist for both sides after compile-byte equality—no scene probe or PNG compare.",
+      "predicted": "A resolver/compiler change that keeps compile bytes identical but diverges applied Blender state (or silently empty/wrong pixels) still passes VERIFICATION while MOD-06 stays marked met.",
+      "fix_hint": "Extend TestModularFlatPreviewEquivalence with the same object/camera/material probes used for title scenes and a bounded PNG structural check; demote MOD-06 until that lands."
+    },
+    {
+      "id": "mod02-orphan-listed-modules",
+      "severity": "high",
+      "location": "internal/project/resolve.go:resolveManifest loadOne closure / MOD-02",
+      "bug": "Resolver loads only the entry/shot import closure. Modules listed in project.modules with missing paths, bad versions, or cycles that are not reachable from the selected entry never fail validate/compile.",
+      "predicted": "Agents get OK on projects whose module table is broken; inspect may show stubs while CI green; MOD-02 “missing files … rejected offline” is overstated for the full explicit graph.",
+      "fix_hint": "On non-shot validate (and --all-shots), either resolve every listed module path for existence/version/containment or document and test that only closure integrity is guaranteed."
+    },
+    {
+      "id": "backlog-phases78-pending-lie",
+      "severity": "high",
+      "location": ".planning/BACKLOG.md (Phases 7–8 pending line) vs STATE.md / REQUIREMENTS MOD/SHOT",
+      "bug": "BACKLOG still says Phases 7–8 “implementation and acceptance evidence are pending” while STATE/REQUIREMENTS/ROADMAP phase bodies mark MOD-01–07 and SHOT-01–03 met with VERIFICATION dates.",
+      "predicted": "Follow-on agents re-implement or reopen closed gates, or treat shipped modular/shot behavior as unfinished and skip regression maintenance.",
+      "fix_hint": "Rewrite the BACKLOG sentence to “shipped; parameterized modules / build cache remain deferred” and leave only true leftovers."
+    },
+    {
+      "id": "roadmap-intro-next-phase-stale",
+      "severity": "medium",
+      "location": ".planning/ROADMAP.md:Status header + Sequencing discipline",
+      "bug": "Intro still says “Phase 7 is the next implementation phase; Phase 8 follows” and sequencing says “New implementation: 7 → 8”, while Phase 7–8 sections and STATE claim complete (2026-11-04).",
+      "predicted": "Correctness/status readers start at Phase 7 PLAN as greenfield and ignore residual Phase 5/0 caveats that are the real open gates.",
+      "fix_hint": "Align the header and sequencing to “0–8 executed; open: LLM eval, release Blender baseline, non-Linux/publish”."
+    },
+    {
+      "id": "shot02-provenance-rehash-disk",
+      "severity": "medium",
+      "location": "internal/project/provenance.go:BuildDependencyManifest / SHOT-02",
+      "bug": "dependencies.json file digests are computed by re-reading paths from disk after resolve, not from bytes captured at load; Effective also hardcodes engine/device CYCLES/CPU.",
+      "predicted": "Mid-job edits or future setting divergence produce provenance that neither matches the compiled snapshot nor the real apply config—silent wrong audit trail for change isolation.",
+      "fix_hint": "Hash the load-time byte snapshot stored on Resolved, and copy effective settings from the declaration/runner config actually used."
+    },
+    {
+      "id": "inspect-swallows-module-failures",
+      "severity": "medium",
+      "location": "internal/project/inspect.go:Inspect",
+      "bug": "Inspect silently skips unreadable/invalid module files (empty kind/namespace/imports) instead of emitting diagnostics; uses loose json.Unmarshal, not strictDecode.",
+      "predicted": "Agents trust inspect ownership maps that omit broken imports or show incomplete graphs while validate on another shot still looks healthy.",
+      "fix_hint": "Fail or attach diagnostics when a listed module path escapes, is missing, or fails strict module schema decode."
+    },
+    {
+      "id": "phase5-complete-overclaim",
+      "severity": "medium",
+      "location": ".planning/STATE.md Active phase / ROADMAP Phase 5 proposed gate / REQUIREMENTS AGENT-01",
+      "bug": "STATE reports roadmap gates 0–8 complete; Phase 5’s proposed gate (≥10/12 model repair-loop + visual HD) remains blocked and was never model-proven—only automated fixtures + smoke visual.",
+      "predicted": "Release/qualification readers treat agent-usability as fully gated when the plan’s decisive authoring evidence is still absent.",
+      "fix_hint": "Keep 0–8 CLI/composition complete, but state Phase 5 proposed authoring gate explicitly unmet/blocked beside AGENT-01."
+    },
+    {
+      "id": "detectkind-project-version-alone",
+      "severity": "medium",
+      "location": "internal/project/load.go:DetectKind vs phases/07-modular-projects/CONTEXT.md Detection",
+      "bug": "CONTEXT requires kind:project and project_version; DetectKind classifies KindProject if project_version is non-empty even without kind, routing scene-like JSON into project load errors.",
+      "predicted": "Malformed or mixed-version files fail with PROJ_* codes instead of SPEC_SCHEMA_VERSION, hiding the real schema mistake.",
+      "fix_hint": "Require kind==\"project\" (and matching project_version) for project detection; add a negative fixture for schema_version+stray project_version."
+    },
+    {
+      "id": "cli-all-shots-undocumented",
+      "severity": "low",
+      "location": "cmd/blendctl/main.go usage strings vs cmdValidate --all-shots / SHOT-01",
+      "bug": "SHOT-01 all-shots mode is implemented and tested, but top-level usage/validate usage omit --all-shots (hint text mentions it only inside SHOT_REQUIRED).",
+      "predicted": "Agents never run project-wide shot validation and ship with broken unselected shots that only --shot paths would miss.",
+      "fix_hint": "Document --all-shots in usage and GUIDE; add a playbook S-case that requires it."
+    },
+    {
+      "id": "playbook-module-activation-stale",
+      "severity": "low",
+      "location": "docs/TEST-PLAYBOOK.md:11 vs Status line / Phases 7–8 VERIFICATION",
+      "bug": "Playbook status says M/S cases are active after 7–8, but baseline prose still says module/shot tests “activate when Phase 7/8 is implemented,” inviting BLOCKED skips of live gates.",
+      "predicted": "Regression runs mark M/S as unimplemented and under-test modular/shot correctness.",
+      "fix_hint": "Replace activation hedges with “M/S mandatory on Linux amd64 pin; record BLOCKED only for LLM/non-Linux.”"
+    }
+  ]
+}

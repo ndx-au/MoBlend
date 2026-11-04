@@ -1,0 +1,2 @@
+# Preserve significant unified-diff context prefixes in frozen review evidence.
+.gauntlet/** -whitespace

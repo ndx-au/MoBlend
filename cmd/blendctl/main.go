@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime/debug"
+	"syscall"
 
 	"github.com/ndx-au/MoBlend/internal/compile"
 	"github.com/ndx-au/MoBlend/internal/diag"
@@ -113,7 +115,7 @@ Usage:
   blendctl schema [scene|project|module]
   blendctl assets list [--json]
   blendctl assets describe <asset-id> [--json]
-  blendctl validate <scene-or-project.json> [--json] [--shot ID]
+  blendctl validate <scene-or-project.json> [--json] [--shot ID | --all-shots]
   blendctl compile <scene-or-project.json> --out DIR [--shot ID]
   blendctl inspect <project.json> [--json]
   blendctl doctor [--json] [--blender PATH]
@@ -157,7 +159,9 @@ func cmdSmoke() error {
 			return fmt.Errorf("create --out parent: %w", err)
 		}
 	}
-	res, err := runner.RunSmoke(context.Background(), runner.SmokeOptions{
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	res, err := runner.RunSmoke(ctx, runner.SmokeOptions{
 		Parent: outParent,
 	})
 	enc := json.NewEncoder(os.Stdout)
@@ -213,7 +217,7 @@ func cmdAssets(args []string) error {
 func cmdValidate(args []string) error {
 	path := firstNonFlag(args)
 	if path == "" {
-		fmt.Fprintln(os.Stderr, "usage: blendctl validate <scene-or-project.json> [--json] [--shot ID]")
+		fmt.Fprintln(os.Stderr, "usage: blendctl validate <scene-or-project.json> [--json] [--shot ID | --all-shots]")
 		return fmt.Errorf("missing path")
 	}
 	wantJSON := hasFlag(args, "--json")
@@ -250,26 +254,34 @@ func cmdValidate(args []string) error {
 }
 
 func cmdValidateAllShots(path string, wantJSON bool) error {
-	rep, err := project.Inspect(path)
+	shots, err := project.ListShots(path)
 	if err != nil {
 		return err
 	}
-	if len(rep.Shots) == 0 {
+	if len(shots) == 0 {
 		_, err := project.LoadSceneOrProject(path, "")
 		return err
 	}
 	var all diag.ErrorList
-	for _, s := range rep.Shots {
-		if _, err := project.LoadSceneOrProject(path, s.ID); err != nil {
+	for _, s := range shots {
+		if _, err := project.LoadAndResolveShot(path, s.ID); err != nil {
 			if el, ok := err.(diag.ErrorList); ok {
 				for i := range el {
-					if el[i].Hint == "" {
-						el[i].Hint = "shot " + s.ID
-					}
+					el[i].Hint = "shot " + s.ID + ": " + el[i].Hint
 				}
 				all = append(all, el...)
 			} else {
 				all = append(all, diag.Diagnostic{Code: "SHOT_VALIDATE", Stage: "semantic", Message: err.Error(), Hint: "shot " + s.ID})
+			}
+		}
+	}
+	// Once every selected closure passes, check orphan listed graph inputs too.
+	if len(all) == 0 {
+		if _, err := project.LoadAndResolveAllListed(path, shots[0].ID); err != nil {
+			if el, ok := err.(diag.ErrorList); ok {
+				all = append(all, el...)
+			} else {
+				all = append(all, diag.Diagnostic{Code: "PROJ_VALIDATE", Stage: "semantic", Message: err.Error()})
 			}
 		}
 	}
@@ -284,7 +296,7 @@ func cmdValidateAllShots(path string, wantJSON bool) error {
 		return all
 	}
 	if wantJSON {
-		return encodeJSON(map[string]any{"ok": true, "shots": len(rep.Shots)})
+		return encodeJSON(map[string]any{"ok": true, "shots": len(shots)})
 	}
 	fmt.Println("OK")
 	return nil
@@ -304,12 +316,25 @@ func cmdCompile(args []string) error {
 	if err != nil {
 		return err
 	}
+	outDir, err = outputParent(outDir, lr.Shot)
+	if err != nil {
+		return err
+	}
+	outDir, err = runner.JobDir(outDir)
+	if err != nil {
+		return err
+	}
 	if err := compile.WriteToDir(outDir, art); err != nil {
 		return err
 	}
 	if lr.SourceMap != nil {
-		data, _ := json.MarshalIndent(lr.SourceMap, "", "  ")
-		_ = os.WriteFile(filepath.Join(outDir, "source_map.json"), append(data, '\n'), 0o644)
+		data, err := json.MarshalIndent(lr.SourceMap, "", "  ")
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(outDir, "source_map.json"), append(data, '\n'), 0o644); err != nil {
+			return err
+		}
 	}
 	if lr.Resolved != nil {
 		if _, err := project.WriteDependencyManifest(outDir, *lr.Resolved); err != nil {
@@ -334,7 +359,9 @@ func cmdInspect(args []string) error {
 
 func cmdDoctor(args []string) int {
 	blender := flagValue(args, "--blender")
-	rep, err := runner.Doctor(context.Background(), blender)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	rep, err := runner.Doctor(ctx, blender)
 	if hasFlag(args, "--json") {
 		os.Stdout.Write(runner.DoctorJSON(rep))
 	} else if err != nil {
@@ -372,18 +399,9 @@ func cmdApply(args []string, mode, usage string) error {
 	if err != nil {
 		return err
 	}
-	outParent := flagValue(args, "--out")
-	if outParent != "" {
-		if err := os.MkdirAll(outParent, 0o755); err != nil {
-			return err
-		}
-	}
-	// Per-shot isolation: nest under shot id when selected.
-	if shot := flagValue(args, "--shot"); shot != "" && outParent != "" {
-		outParent = filepath.Join(outParent, shot)
-		if err := os.MkdirAll(outParent, 0o755); err != nil {
-			return err
-		}
+	outParent, err := outputParent(flagValue(args, "--out"), lr.Shot)
+	if err != nil {
+		return err
 	}
 	frame := 0
 	if v := flagValue(args, "--frame"); v != "" {
@@ -391,16 +409,16 @@ func cmdApply(args []string, mode, usage string) error {
 			return fmt.Errorf("bad --frame: %w", err)
 		}
 	}
-	res, err := runner.RunApply(context.Background(), runner.ApplyOptions{
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	res, err := runner.RunApply(ctx, runner.ApplyOptions{
 		Parent:      outParent,
+		Resolved:    lr.Resolved,
 		Artifacts:   art,
 		Decl:        lr.Decl,
 		Mode:        mode,
 		RenderFrame: frame,
 	})
-	if err == nil && lr.Resolved != nil {
-		_, _ = project.WriteDependencyManifest(filepath.Join(res.JobDir, "out"), *lr.Resolved)
-	}
 	if encErr := encodeJSON(res); encErr != nil && err == nil {
 		return encErr
 	}
@@ -438,4 +456,41 @@ func encodeJSON(v any) error {
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
 	return enc.Encode(v)
+}
+
+// outputParent only accepts a validated, single-component shot directory.
+func outputParent(parent, shot string) (string, error) {
+	if shot != "" && !project.ValidShotID(shot) {
+		return "", fmt.Errorf("invalid shot id %q", shot)
+	}
+	if parent == "" {
+		return "", nil
+	}
+	root, err := filepath.Abs(parent)
+	if err != nil {
+		return "", err
+	}
+	if err := os.MkdirAll(root, 0o755); err != nil {
+		return "", err
+	}
+	root, err = filepath.EvalSymlinks(root)
+	if err != nil {
+		return "", err
+	}
+	dest := root
+	if shot != "" {
+		dest = filepath.Join(root, shot)
+	}
+	if err := os.MkdirAll(dest, 0o755); err != nil {
+		return "", err
+	}
+	real, err := filepath.EvalSymlinks(dest)
+	if err != nil {
+		return "", err
+	}
+	relative, err := filepath.Rel(root, real)
+	if err != nil || relative == ".." || (len(relative) > 3 && relative[:3] == "../") {
+		return "", fmt.Errorf("shot output escapes --out root")
+	}
+	return real, nil
 }

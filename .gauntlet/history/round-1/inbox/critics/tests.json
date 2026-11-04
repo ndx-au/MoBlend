@@ -1,0 +1,86 @@
+{
+  "persona": "tests",
+  "plan_hash": "915d4f971c9d7d87f3eb48188232c1df13070239b936944c064d2554fe636db0",
+  "findings": [
+    {
+      "id": "all-shots-untested",
+      "severity": "high",
+      "location": "internal/project/resolve_test.go:TestShotSelectionAndAllShots; cmd/blendctl.cmdValidateAllShots",
+      "bug": "Test name and Phase 8 VERIFICATION credit `--all-shots` surfacing the broken unselected shot, but the test only calls LoadAndResolveShot; no automated assertion exercises ValidateAllShots/CLI --all-shots (manual one-liner only).",
+      "predicted": "Regression in project-wide shot aggregation can ship green while selected-shot paths still pass.",
+      "fix_hint": "Add a Go test that validates broken_unselected with all-shots mode and asserts a diagnostic for shot `bad` while documenting selected-shot success separately."
+    },
+    {
+      "id": "mod-bound-limits-untested",
+      "severity": "high",
+      "location": "internal/project/resolve.go:loadOne/readBounded; playbook M06; MOD-02",
+      "bug": "Roadmap/MOD-02 require offline rejection of import-depth, per-file bytes, total project bytes, module-count, and absolute paths; resolve.go emits LIM_IMPORT_DEPTH/LIM_FILE_BYTES/LIM_PROJECT_BYTES/LIM_MODULES/PROJ_PATH_ABS but no *_test.go covers those codes (only cycle/missing/escape/symlink/aggregate objects).",
+      "predicted": "Depth/byte/count/absolute-path bypasses can land without failing CI despite containment claims.",
+      "fix_hint": "Add negative fixtures and assert exact codes for depth>8, oversized file, project-byte overrun, >32 modules, and absolute module path."
+    },
+    {
+      "id": "aggregate-limit-assertion-soft",
+      "severity": "high",
+      "location": "internal/project/resolve_test.go:TestAggregateObjectLimit",
+      "bug": "After expecting any error, acceptance is nearly tautological: nonempty Message plus 'object'/32/`/objects` marks found=true, so many non-LIM diagnostics satisfy the check; VERIFICATION claims LIM_OBJECTS specifically.",
+      "predicted": "Broken or removed aggregate object enforcement can still pass if any objects-related error is returned.",
+      "fix_hint": "Require Code == LIM_OBJECTS (or the single documented code) and fail on other codes."
+    },
+    {
+      "id": "escape-code-ambiguous",
+      "severity": "medium",
+      "location": "internal/project/resolve_test.go:TestRejectEscape; testdata/project/negative/escape",
+      "bug": "Escape rejection accepts PROJ_PATH_ESCAPE or PROJ_FILE_MISSING, so a containment miss that degrades to missing-file still passes the adversarial path case.",
+      "predicted": "Path-escape regressions are masked as generic missing-file failures.",
+      "fix_hint": "Pin PROJ_PATH_ESCAPE for `../` traversal; keep FILE_MISSING only on the dedicated missing_file fixture with an explicit code assert."
+    },
+    {
+      "id": "modular-preview-existence-only",
+      "severity": "medium",
+      "location": "internal/runner/project_integration_test.go:TestModularFlatPreviewEquivalence; Phase 7 gate MOD-05/06",
+      "bug": "Plan gate asks for equivalent Blender scene properties/render outputs; test proves compile-byte equality then only os.Stat on PNG/blend—no reopen probe comparing IDs/transforms/materials between modular and flat.",
+      "predicted": "Runtime binding divergence between modular and flat can pass while both produce nonempty artifacts.",
+      "fix_hint": "Reuse title/scene probe helpers to assert equivalent probed properties (and optionally image tolerance) for both previews."
+    },
+    {
+      "id": "s04-failed-shot-missing",
+      "severity": "medium",
+      "location": "internal/runner/project_integration_test.go:TestConcurrentShotPreviewsIsolated; playbook S04",
+      "bug": "S04 requires concurrent shot builds plus one failed shot with success/failure attributed correctly; the integration test only runs three successful previews and checks distinct job dirs.",
+      "predicted": "A failed concurrent shot can pollute sibling manifests/outputs or be mis-attributed without CI noticing.",
+      "fix_hint": "Extend concurrent shot test with one deliberately failing shot and assert isolation of success manifests vs failure for the right IDs."
+    },
+    {
+      "id": "eval-png-not-brief",
+      "severity": "medium",
+      "location": "internal/runner/eval_integration_test.go:TestEvalSupportedBriefsPreview; Phase 5 proposed gate",
+      "bug": "Named as supported-brief evaluation but only validate/compile/preview + PNG existence for hand-authored fixtures—no checklist assertions (text, lens, frame counts, chart values). Playbook warns fixtures ≠ NL authoring; STATE still blocks LLM repair-loop evidence.",
+      "predicted": "Fixture drift that still renders a PNG is treated as brief/gate evidence; LLM ≥10/12 claim remains untested and easy to overstate.",
+      "fix_hint": "Rename/clarify as fixture smoke; add per-fixture structural oracles for brief checklists; keep LLM repair-loop explicitly blocked until model runs exist."
+    },
+    {
+      "id": "unsupported-fixture-vs-prompt",
+      "severity": "medium",
+      "location": "internal/runner/eval_integration_test.go:TestEvalUnsupportedRejected; testdata/eval/unsupported; playbook U01–U04",
+      "bug": "Automated suite only asserts ParseAndValidate ErrorList on schema/semantic poison JSON (unknown asset, raw python field, etc.); playbook unsupported prompts (arbitrary .blend/Python, download/rig, huge limits, MP4) have no automated agent-refusal oracle.",
+      "predicted": "Capability-boundary refusals for U-prompts can regress while fixture rejections stay green.",
+      "fix_hint": "Document fixture IDs as schema negatives only; add separate blocked/pending cases for NL unsupported refusals until an agent eval harness exists."
+    },
+    {
+      "id": "ease-inout-probe-gap",
+      "severity": "low",
+      "location": "internal/runner/phase3_integration_test.go; playbook B05; Phase 3 gate",
+      "bug": "Linear midpoint and step-hold have Blender probes; ease_in_out (declared in schema/fixtures) has no interior-sample probe matching B05.",
+      "predicted": "Wrong easing binding can ship while step/linear remain green.",
+      "fix_hint": "Add a Blender frame probe for ease_in_out interior samples against the documented curve contract."
+    },
+    {
+      "id": "missing-diag-code-weak",
+      "severity": "low",
+      "location": "internal/project/resolve_test.go:TestRejectMissing",
+      "bug": "Only asserts err != nil; no ErrorList/code pin (unlike cycle/symlink).",
+      "predicted": "Wrong failure mode (panic recovered elsewhere, IO wrap) still counts as coverage for missing dependencies.",
+      "fix_hint": "Assert diag.ErrorList with PROJ_MODULE_MISSING or PROJ_FILE_MISSING as documented."
+    }
+  ]
+}

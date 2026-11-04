@@ -1,0 +1,62 @@
+{
+  "persona": "correctness",
+  "plan_hash": "364610b4ffb66c54d77b3b58ae284459227c60c11e029b5c8a35269bc31a2856",
+  "findings": [
+    {
+      "id": "duplicate-import-alias-overwrite",
+      "severity": "high",
+      "location": "internal/project/resolve.go:resolveManifest aliasToNS construction",
+      "bug": "Import aliases are assigned into a map without rejecting duplicates. A CLI probe with imports [{alias:title,module:title},{alias:title,module:other}] and a title:text scale track validates successfully. Compiling with the imports reversed changes that track from other__text to title__text. This violates the Phase 7 rejection of ambiguity and import-order independence.",
+      "predicted": "An agent can accidentally reuse an alias and silently animate the wrong module; reordering imports changes the resulting scene rather than producing a diagnostic.",
+      "fix_hint": "Reject duplicate aliases within each module before constructing aliasToNS, with a source-aware diagnostic and an import-reordering regression."
+    },
+    {
+      "id": "entry-camera-track-unresolvable",
+      "severity": "high",
+      "location": "internal/project/resolve.go:resolveRef / moduleMaps construction",
+      "bug": "Camera IDs remain entry-owned and unqualified, but the entry local reference map includes only objects and lights. Adding an entry animation target_id cam to the shipped modular title fixture fails with SEM_TRACK_TARGET (unknown target_id cam); the equivalent single-file declaration validates. Camera transform animation is supported by the existing scene language, so modular composition loses an existing capability.",
+      "predicted": "A supported camera move cannot be expressed in an entry or selected shot using the documented bare camera ID, blocking modular equivalents of valid single-file scenes.",
+      "fix_hint": "Resolve the entry camera ID explicitly to its unchanged ID, and cover modular/flat camera-animation equivalence."
+    },
+    {
+      "id": "source-pointer-still-flattened",
+      "severity": "medium",
+      "location": "internal/project/resolve.go:annotateSource",
+      "bug": "Semantic diagnostics add Source but retain flattened declaration array indices. In a CLI probe with one object in main.entry.json and one invalid-color object in title.module.json, the latter is reported as source title.module.json, pointer /objects/1/material/base_color although that file only has /objects/0. Entry scene/camera errors also have no source mapping. Phase 7 explicitly requires original file and pointer preservation.",
+      "predicted": "An agent following a diagnostic edits a nonexistent or unrelated array element, and cannot reliably repair a modular scene from machine diagnostics.",
+      "fix_hint": "Translate each flattened pointer prefix to the stored SourceRef.Pointer and map entry-owned scene/camera diagnostics to the entry source."
+    },
+    {
+      "id": "qualified-reference-import-bypass",
+      "severity": "medium",
+      "location": "internal/project/resolve.go:resolveRef already-qualified fallback",
+      "bug": "Any reference containing __ is returned unchanged, bypassing the explicit alias-import contract. A helper module with no imports can animate title__text when title is merely a sibling dependency of the entry; an isolated CLI probe validates this successfully. The frozen Phase 7 contract requires alias:local_id for cross-module references and explicit imports.",
+      "predicted": "Modules acquire hidden dependencies on sibling namespaces; extracting or reusing a module breaks references even though its declared imports did not change.",
+      "fix_hint": "Reject qualified IDs in module source and require cross-module targets to resolve through a declared import alias."
+    },
+    {
+      "id": "module-entry-fields-silently-ignored",
+      "severity": "medium",
+      "location": "internal/project/resolve.go:loadOne ModuleFile validation",
+      "bug": "Typed decoding accepts scene, camera, schema_version and asset_pack_version on kind module, while the shipped module schema explicitly forbids all four. Only the selected entry fields are used. Adding scene:{fps:-10} to title.module.json still produces validate --json ok:true; that setting is silently discarded.",
+      "predicted": "Agents receive successful validation for declarations that violate the published module contract and render with settings different from those they placed in the module.",
+      "fix_hint": "Enforce the kind-dependent module/entry field contract during load and reject prohibited fields before assembly."
+    },
+    {
+      "id": "later-track-overwrites-interpolation",
+      "severity": "high",
+      "location": "internal/resources/templates/apply_scene.py:apply_animation interpolation loop",
+      "bug": "After inserting each track, interpolation is assigned to every FCurve in the object action, including previously inserted properties. A bounded real probe calling the shipped function on Blender 5.3.0 Beta 7e7c173d45c8 inserted location step keys (frame 1 x=0; frame 9 x=8), followed by scale linear keys. At frame 3 location.x was 2.0 rather than the required held value 0; all location curves had been changed to LINEAR.",
+      "predicted": "Valid mixed-interpolation tracks on one object render the wrong motion, and reordering independent animation tracks changes their meaning.",
+      "fix_hint": "Apply interpolation only to the FCurves belonging to the current track property and action slot, then assert interior-frame values with mixed step/linear tracks in both orders."
+    },
+    {
+      "id": "material-track-interpolation-never-applied",
+      "severity": "high",
+      "location": "internal/resources/templates/apply_scene.py:apply_animation material keyframing and obj.animation_data guard",
+      "bug": "Material tracks insert keyframes into mat.node_tree, but interpolation is only assigned through obj.animation_data.action. On pinned Blender 5.3.0 Beta 7e7c173d45c8, a material-only object has no object animation_data and its node-tree curves remain BEZIER. A real shipped-function probe with frame 1/9 roughness step 0->1 and base-color linear black->white evaluated frame 3 as roughness 0.15625 (expected 0) and linear-red 0.15625 (expected 0.25).",
+      "predicted": "Validated material step and linear tracks silently render Blender default easing instead of their declared interpolation; adding a material track after an object track can also overwrite unrelated object interpolation.",
+      "fix_hint": "Resolve the actual animated datablock/action for material tracks and set interpolation on only that material property curves, with interior-frame Blender checks for step and linear material tracks."
+    }
+  ]
+}

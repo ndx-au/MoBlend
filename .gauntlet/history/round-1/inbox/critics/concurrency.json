@@ -1,0 +1,54 @@
+{
+  "persona": "concurrency",
+  "plan_hash": "915d4f971c9d7d87f3eb48188232c1df13070239b936944c064d2554fe636db0",
+  "findings": [
+    {
+      "id": "compile-out-clobber",
+      "severity": "high",
+      "location": "cmd/blendctl/main.go:cmdCompile vs cmdApply shot nesting; Phase 8 CONTEXT Outputs",
+      "bug": "Phase 8 required `--out DIR --shot ID` to nest under `DIR/<shot>/` and always use distinct job dirs. preview/render do both via shot join + JobDir/MkdirTemp; compile writes straight into `--out` with no shot nest and no unique job dir.",
+      "predicted": "Concurrent `blendctl compile … --shot intro|outro --out SAME_DIR` (multi-agent / parallel CI) overwrite each other's script/data/source_map/dependencies.json; SHOT-02 isolation holds only for preview/render paths covered by tests.",
+      "fix_hint": "Make compile apply the same `filepath.Join(out, shot)` nesting as cmdApply, or always write under a MkdirTemp job dir like RunApply."
+    },
+    {
+      "id": "deps-hash-toctou",
+      "severity": "high",
+      "location": "internal/project/provenance.go:BuildDependencyManifest",
+      "bug": "SHOT-02 / comment claim hashes from the load snapshot, but BuildDependencyManifest re-ReadFiles disk paths in r.Files after resolve (and after Blender in cmdApply). Loaded module bytes are not retained on Resolved.",
+      "predicted": "While concurrent shot jobs run, an edit to a shared module yields dependencies.json digests that disagree with Decl/ResolvedDataSHA actually compiled and rendered—false provenance under concurrent agents.",
+      "fix_hint": "Hash the bytes retained at load time (store digests or raw snapshots on Resolved) and never re-read project inputs when writing dependencies.json."
+    },
+    {
+      "id": "shared-mod-torn-load",
+      "severity": "medium",
+      "location": "internal/project/resolve.go:loadOne; ARCHITECTURE shared-module immutability",
+      "bug": "Plan/ARCHITECTURE treat a shared module as immutable input during a run; execution only documents agent ownership. loadOne sequentially ReadFiles each closure member with no FS snapshot/copy into the job tree.",
+      "predicted": "Concurrent agents editing shared.module.json (or sibling modules) mid-resolve produce torn Decl across shots, or one shot sees pre-edit bytes and another post-edit while both claim success.",
+      "fix_hint": "Copy or mmap a consistent closure snapshot into the job dir before resolve/compile, or fail the run if file mtimes/hashes change between first read and manifest write."
+    },
+    {
+      "id": "path-contain-toctou",
+      "severity": "medium",
+      "location": "internal/project/resolve.go:resolveContainedPath",
+      "bug": "Containment uses Lstat+EvalSymlinks on `real` but returns unverified `abs`; readBounded later opens `abs`. No O_NOFOLLOW/openat of the checked real path.",
+      "predicted": "Concurrent replacement of a module path with an escaping symlink between check and read bypasses PROJ_PATH_ESCAPE and loads out-of-tree bytes into the resolved scene.",
+      "fix_hint": "Open/read the EvalSymlinks-validated real path (or O_NOFOLLOW) and refuse if the opened file identity diverges from the containment check."
+    },
+    {
+      "id": "blender-cancel-env",
+      "severity": "medium",
+      "location": "internal/runner/runner.go:Run",
+      "bug": "Concurrent isolation relies on unique job dirs and --factory-startup, but Run inherits process env (shared Blender/XDG caches) and uses CommandContext without Setpgid/process-group kill.",
+      "predicted": "Timeout/cancel of one job can leave Blender child writers racing into that job's out/; parallel jobs may contend on shared user cache dirs despite separate WorkDir packs.",
+      "fix_hint": "Set a per-job HOME/XDG_* under JobDir and kill the Blender process group on ctx cancel (SysProcAttr.Setpgid + negative PID signal)."
+    },
+    {
+      "id": "shot-concurrent-test-gap",
+      "severity": "low",
+      "location": "internal/runner/project_integration_test.go:TestConcurrentShotPreviewsIsolated",
+      "bug": "Gate evidence for SHOT-02 concurrent isolation uses separate Parents (`parent/<shot>`) and only checks outs[0]==outs[1] || outs[1]==outs[2], omitting outs[0] vs outs[2]; does not exercise same-parent MkdirTemp like TestConcurrentJobsIsolated.",
+      "predicted": "Regressions in same-`--out` concurrent shot preview uniqueness or incomplete pairwise job-dir checks can green while colliding.",
+      "fix_hint": "Run all three shots with the same Parent, assert pairwise distinct JobDir/PNG/manifest paths, and mirror that matrix for compile once nesting is fixed."
+    }
+  ]
+}

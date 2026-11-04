@@ -29,3 +29,8 @@ go run ./cmd/blendctl preview testdata/compile/chart_small.json --out /tmp/p3-ch
 - Bar heights via mesh point attribute `bar_value`; apply script builds points per declaration
 - Schema/examples require `asset_pack_version: "0.1.0"`
 - Compositor look deferred
+
+
+## Follow-up fixes — 2026-11-05
+
+Mixed transform/material interpolation now targets the correct property curves and active action slot. Real reopened Blender probes sample endpoints and asymmetric interior frames for step, linear and AUTO_CLAMPED easing, in both track orders, including camera motion. `go test ./... -count=1 -timeout 10m` passed 134 tests/subtests with real Blender; scoped race suite passed 40. See [follow-up verification](../../fixes/gauntlet-followup/VERIFICATION.md) for exact commands and remaining caveats.

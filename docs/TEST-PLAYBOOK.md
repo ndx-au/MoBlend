@@ -1,6 +1,6 @@
 # MoBlend test and agent evaluation playbook
 
-Status: executable test battery. Scenarios are oracles, not automatic results. Written 2026-11-04 against the Linux RC; Module (M) and Shot (S) cases are active after Phases 7–8. Latest recorded run: `docs/TEST-PLAYBOOK-RUN-2026-11-04.md`.
+Status: executable test battery. Scenarios are oracles, not automatic results. Written 2026-11-04 against the Linux RC; Module (M) and Shot (S) cases are mandatory on the Linux amd64 pin. Latest recorded run: `docs/TEST-PLAYBOOK-RUN-2026-11-04.md`.
 
 Audience: agents and maintainers finding, reproducing and fixing transpiler failures. After reading, select a supported suite, run its cases, preserve evidence, minimize failures and add meaningful regression coverage before fixing code.
 
@@ -8,7 +8,7 @@ Audience: agents and maintainers finding, reproducing and fixing transpiler fail
 
 Measure five separate outcomes: declaration correctness, deterministic compilation, correct Blender state, usable rendered output and agent brief adherence. A PNG existing is not evidence of the other four. Existing prepared JSON fixtures are compiler/render tests, not natural-language authoring evaluations.
 
-Current baseline: scene schema 1.0.0, pack 0.1.0, Blender 5.3 family, Linux amd64. Record exact versions and hashes for every run. Module tests activate when Phase 7 is implemented; shot tests activate in Phase 8. Unimplemented planned features are BLOCKED, never passed or counted as regressions against the RC. Runtime remains local and requires no model; model access is only an optional evaluation dependency.
+Current baseline: scene schema 1.0.0, pack 0.1.0, Blender 5.3 family, Linux amd64. Record exact versions and hashes for every run. Module and shot tests are active. Record BLOCKED for unavailable model/non-Linux evidence; never count skips as passes. Runtime remains local and requires no model; model access is only an optional evaluation dependency.
 
 ## Run levels and budgets
 
@@ -157,7 +157,7 @@ Unsupported prompt set (scored separately):
 | U03 | “Render 10,000 frames with 10,000 objects.” | Explain existing bounded limits; no silent truncation or large render launch |
 | U04 | “Output an MP4 with synchronized audio.” | Explain unsupported video/audio pipeline; PNG alternative may be offered explicitly, never claimed as the requested deliverable |
 
-When Phase 7 is enabled, add prompt M-P01: “Split this valid scene into two owned modules without changing the image. Give me the dependency listing and preview.” Score M01/M04/M05 and scope of edits. When Phase 8 is enabled, add S-P01: “Change only shot two's title and render only shot two.” Score S01/S03/S04. They do not enter the P01–P12 denominator.
+Include prompt M-P01: “Split this valid scene into two owned modules without changing the image. Give me the dependency listing and preview.” Score M01/M04/M05 and scope of edits. Include S-P01: “Change only shot two's title and render only shot two.” Score S01/S03/S04. They do not enter the P01–P12 denominator.
 
 ### Attempt protocol and scoring
 
@@ -216,4 +216,9 @@ An execution-agent instruction for this loop:
 
 ## Adoption order
 
-First extend the current suite with A/B/C gaps found during the active phase; reuse its 12 fixture renders as baseline regression coverage. Implement M cases alongside Phase 7 and S cases alongside Phase 8. Run P01–P12 with an actual model when available to resolve the outstanding authoring-evaluation evidence gap. Add every confirmed minimized bug to the permanent regression corpus. This playbook adds verification guidance, not a new runtime feature or a completed milestone.
+First extend the current suite with A/B/C gaps found during the active phase; reuse its 12 fixture renders as baseline regression coverage. Run the mandatory M and S cases for composition changes. Run P01–P12 with an actual model when available to resolve the outstanding authoring-evaluation evidence gap. Add every confirmed minimized bug to the permanent regression corpus. This playbook adds verification guidance, not a new runtime feature or a completed milestone.
+
+## Gauntlet round 1 clarifications
+
+- S02: invoke `validate testdata/project/shots/broken_unselected/project.json --all-shots --json`; require a `PROJ_FILE_MISSING` diagnostic attributed to shot `bad`. Selected `good` must succeed independently.
+- Prepared supported JSON previews are fixture smoke tests only. Unsupported JSON negatives check the schema/validator, not natural-language refusal behavior. P01–P12 and U01–U04 agent-authoring/refusal evidence remain blocked until actual model evaluation runs are recorded.

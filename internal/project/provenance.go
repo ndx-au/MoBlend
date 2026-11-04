@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -38,18 +37,8 @@ func BuildDependencyManifest(r Resolved) (DependencyManifest, error) {
 	if err != nil {
 		return DependencyManifest{}, err
 	}
-	files := append([]string(nil), r.Files...)
-	sort.Strings(files)
-	digests := make([]FileDigest, 0, len(files))
-	for _, rel := range files {
-		abs := filepath.Join(r.RootDir, filepath.FromSlash(rel))
-		raw, err := os.ReadFile(abs)
-		if err != nil {
-			return DependencyManifest{}, fmt.Errorf("hash %s: %w", rel, err)
-		}
-		sum := sha256.Sum256(raw)
-		digests = append(digests, FileDigest{Path: rel, SHA256: hex.EncodeToString(sum[:])})
-	}
+	digests := append([]FileDigest(nil), r.Digests...)
+	sort.Slice(digests, func(i, j int) bool { return digests[i].Path < digests[j].Path })
 	canon, err := json.Marshal(r.Decl)
 	if err != nil {
 		return DependencyManifest{}, err
@@ -101,4 +90,9 @@ func ResolvedDataSHA(decl spec.Declaration) (string, error) {
 	}
 	sum := sha256.Sum256(canon)
 	return hex.EncodeToString(sum[:]), nil
+}
+
+func digest(path string, raw []byte) FileDigest {
+	sum := sha256.Sum256(raw)
+	return FileDigest{Path: path, SHA256: hex.EncodeToString(sum[:])}
 }

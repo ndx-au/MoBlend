@@ -30,3 +30,13 @@ go run ./cmd/blendctl compile examples/projects/three_shots/project.json --shot 
 
 - No incremental cache, scheduler, or video assembly (deferred).
 - Model evaluation and non-Linux platforms remain unclaimed.
+
+
+## 2026-11-05 Gauntlet repair addendum
+
+SHOT-01 all-shots behavior now has a real CLI-path regression attributing the broken bad shot. SHOT-02 compile outputs use unique shot-nested jobs and hashes come from load-time bytes, including the manifest. CLI signal/process-group cancellation and exact render frame sets are covered. See [repair verification](../../fixes/gauntlet-round-1/VERIFICATION.md) for exact commands, fresh results, and remaining medium/low gaps. Full suite: `go test ./... -count=1 -timeout 10m` passed 103 tests/subtests with real Blender; project/CLI race checks passed 42. Historical evidence above describes the earlier implementation.
+
+
+## Follow-up fixes — 2026-11-05
+
+Concurrent shot previews now include an intentional failed shot, with independent success/failure markers, shot identity and dependency attribution. Version probes share tested process-group cancellation and bounded logs. Full Go/Blender suite: 134 tests/subtests passed; scoped race suite: 40 passed. See [follow-up verification](../../fixes/gauntlet-followup/VERIFICATION.md) for commands, complete finding mapping and remaining release/evaluation caveats.

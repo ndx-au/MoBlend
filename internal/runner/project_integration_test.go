@@ -3,8 +3,12 @@ package runner_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"image/png"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -56,13 +60,101 @@ func TestModularFlatPreviewEquivalence(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	// Reopen each independently saved scene and compare actual Blender state.
+	probe := filepath.Join(parent, "probe_equivalence.py")
+	src := `
+import bpy, json, sys
+s = bpy.context.scene
+s.frame_set(1)
+title = bpy.data.objects.get("title__text")
+assert title is not None and title.type == "FONT"
+assert title.data.body == "MoBlend"
+assert abs(title.location.z - 0.5) < 1e-5
+assert s.camera is not None and s.camera.name == "cam"
+assert list(s.camera.location) == [0.0, -4.0, 1.0]
+assert len(title.data.materials) == 1
+objects = []
+for o in sorted(s.objects, key=lambda o: o.name):
+    mats = []
+    for mat in getattr(o.data, "materials", []):
+        bsdf = mat.node_tree.nodes.get("Principled BSDF")
+        mats.append({"color": list(bsdf.inputs["Base Color"].default_value), "roughness": bsdf.inputs["Roughness"].default_value})
+    objects.append({"id": o.name, "type": o.type, "location": list(o.location), "rotation": list(o.rotation_euler), "scale": list(o.scale), "materials": mats})
+state = {"objects": objects, "camera": s.camera.name, "lens": s.camera.data.lens, "resolution": [s.render.resolution_x, s.render.resolution_y], "frames": [s.frame_start, s.frame_end], "fps": s.render.fps}
+with open(sys.argv[sys.argv.index("--")+1], "w") as f:
+    json.dump(state, f, sort_keys=True)
+`
+	if err := os.WriteFile(probe, []byte(src), 0600); err != nil {
+		t.Fatal(err)
+	}
+	var states []any
+	for _, result := range []runner.ApplyResult{rm, rf} {
+		stateFile := filepath.Join(result.JobDir, "scene_probe.json")
+		if _, err := runner.Run(context.Background(), runner.Options{Blender: blender, BlendFile: result.Blend, Python: probe, ExtraArgs: []string{stateFile}, Timeout: 2 * time.Minute}); err != nil {
+			t.Fatal(err)
+		}
+		raw, err := os.ReadFile(stateFile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var state any
+		if err := json.Unmarshal(raw, &state); err != nil {
+			t.Fatal(err)
+		}
+		states = append(states, state)
+	}
+	if !reflect.DeepEqual(states[0], states[1]) {
+		t.Fatalf("saved Blender states differ: %v / %v", states[0], states[1])
+	}
+	// Decode and compare pixels under this same CPU Blender pin, allowing a
+	// small channel tolerance. Require spatial variation to reject empty renders.
+	images := []string{rm.PNG, rf.PNG}
+	var pixels [][][4]uint32
+	for _, path := range images {
+		f, err := os.Open(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		img, err := png.Decode(f)
+		f.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+		bounds := img.Bounds()
+		if bounds.Dx() != 64 || bounds.Dy() != 64 {
+			t.Fatalf("unexpected PNG bounds %v", bounds)
+		}
+		values := [][4]uint32{}
+		distinct := map[[4]uint32]bool{}
+		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+			for x := bounds.Min.X; x < bounds.Max.X; x++ {
+				r, g, b, a := img.At(x, y).RGBA()
+				p := [4]uint32{r, g, b, a}
+				values = append(values, p)
+				distinct[p] = true
+			}
+		}
+		if len(distinct) < 8 {
+			t.Fatalf("render lacks content: %d colors", len(distinct))
+		}
+		pixels = append(pixels, values)
+	}
+	for i, a := range pixels[0] {
+		for c, v := range a {
+			delta := int64(v) - int64(pixels[1][i][c])
+			if delta < -257 || delta > 257 {
+				t.Fatalf("PNG mismatch pixel %d channel %d: %d", i, c, delta)
+			}
+		}
+	}
+
 }
 
 func TestConcurrentShotPreviewsIsolated(t *testing.T) {
 	blender := blenderAvailable(t)
 	path := filepath.Join("..", "..", "examples/projects/three_shots/project.json")
 	parent := t.TempDir()
-	shots := []string{"intro", "product", "outro"}
+	shots := []string{"intro", "product", "outro", "product"}
 	var wg sync.WaitGroup
 	errs := make([]error, len(shots))
 	outs := make([]string, len(shots))
@@ -80,21 +172,43 @@ func TestConcurrentShotPreviewsIsolated(t *testing.T) {
 				errs[i] = err
 				return
 			}
-			shotParent := filepath.Join(parent, shot)
-			_ = os.MkdirAll(shotParent, 0o755)
+
+			if i == 3 {
+				art.Script = []byte("raise RuntimeError('intentional failed shot')\n")
+			}
 			res, err := runner.RunApply(context.Background(), runner.ApplyOptions{
-				Blender: blender, Parent: shotParent, Artifacts: art, Decl: r.Decl,
-				Mode: "preview", RenderFrame: 1, Timeout: 3 * time.Minute,
+				Blender: blender, Parent: parent, Artifacts: art, Decl: r.Decl,
+				Mode: "preview", RenderFrame: 1, Timeout: 3 * time.Minute, Resolved: &r,
 			})
 			errs[i] = err
-			if err == nil {
-				outs[i] = res.JobDir
-				_, _ = project.WriteDependencyManifest(filepath.Join(res.JobDir, "out"), r)
+			outs[i] = res.JobDir
+			if res.Shot != shot {
+				errs[i] = fmt.Errorf("shot attribution %q want %q", res.Shot, shot)
 			}
 		}(i, shot)
 	}
 	wg.Wait()
 	for i, err := range errs {
+		if i == 3 {
+			if err == nil {
+				t.Fatal("intentional failed shot succeeded")
+			}
+			raw, e := os.ReadFile(filepath.Join(outs[i], "out", "manifest.failed.json"))
+			if e != nil {
+				t.Fatal(e)
+			}
+			var failed struct{ Status, Shot string }
+			if e = json.Unmarshal(raw, &failed); e != nil {
+				t.Fatal(e)
+			}
+			if failed.Status != "failed" || failed.Shot != shots[i] {
+				t.Fatalf("failed shot attribution: %s", raw)
+			}
+			if _, e = os.Stat(filepath.Join(outs[i], "out", "manifest.json")); !os.IsNotExist(e) {
+				t.Fatal("failed shot has success manifest")
+			}
+			continue
+		}
 		if err != nil {
 			t.Fatalf("shot %s: %v", shots[i], err)
 		}
@@ -104,11 +218,37 @@ func TestConcurrentShotPreviewsIsolated(t *testing.T) {
 		if _, err := os.Stat(filepath.Join(outs[i], "out", "preview.png")); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := os.Stat(filepath.Join(outs[i], "out", "dependencies.json")); err != nil {
+		raw, err := os.ReadFile(filepath.Join(outs[i], "out", "dependencies.json"))
+		if err != nil {
 			t.Fatal(err)
 		}
+		var deps project.DependencyManifest
+		if err = json.Unmarshal(raw, &deps); err != nil {
+			t.Fatal(err)
+		}
+		if deps.Shot != shots[i] {
+			t.Fatalf("dependency shot %s want %s", deps.Shot, shots[i])
+		}
+		raw, err = os.ReadFile(filepath.Join(outs[i], "out", "manifest.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var manifest struct {
+			Status  string
+			Outputs map[string]any
+		}
+		if err = json.Unmarshal(raw, &manifest); err != nil {
+			t.Fatal(err)
+		}
+		if manifest.Status != "complete" || manifest.Outputs["shot"] != shots[i] {
+			t.Fatalf("success shot attribution: %s", raw)
+		}
 	}
-	if outs[0] == outs[1] || outs[1] == outs[2] {
-		t.Fatal("shot jobs must use distinct directories")
+	for i := range outs {
+		for j := 0; j < i; j++ {
+			if outs[i] == outs[j] {
+				t.Fatal("shot jobs must use distinct directories")
+			}
+		}
 	}
 }

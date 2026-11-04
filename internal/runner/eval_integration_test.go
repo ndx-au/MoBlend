@@ -14,7 +14,8 @@ import (
 	"github.com/ndx-au/MoBlend/internal/validate"
 )
 
-func TestEvalSupportedBriefsPreview(t *testing.T) {
+// TestEvalPreparedFixturesPreview is a render smoke suite, not a model authoring evaluation.
+func TestEvalPreparedFixturesPreview(t *testing.T) {
 	blender := blenderAvailable(t)
 	dir := filepath.Join("..", "..", "testdata/eval/supported")
 	entries, err := os.ReadDir(dir)
@@ -58,10 +59,11 @@ func TestEvalSupportedBriefsPreview(t *testing.T) {
 			pass++
 		})
 	}
-	t.Logf("supported briefs previewed: %d/%d", pass, len(files))
+	t.Logf("prepared fixtures previewed: %d/%d", pass, len(files))
 }
 
-func TestEvalUnsupportedRejected(t *testing.T) {
+// TestEvalUnsupportedSchemaFixturesRejected checks JSON rejection, not natural-language refusals.
+func TestEvalUnsupportedSchemaFixturesRejected(t *testing.T) {
 	dir := filepath.Join("..", "..", "testdata/eval/unsupported")
 	entries, err := os.ReadDir(dir)
 	if err != nil {

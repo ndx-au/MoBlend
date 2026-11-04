@@ -29,7 +29,7 @@ type loadedModule struct {
 	Depth   int
 }
 
-func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved, error) {
+func resolveManifest(root, manRel string, manifestData []byte, man Manifest, shotID string, allListed bool) (Resolved, error) {
 	if len(man.Modules) == 0 {
 		return Resolved{}, diag.ErrorList{{
 			Code: "PROJ_MODULES_EMPTY", Stage: "schema", Pointer: "/modules", Source: manRel,
@@ -77,13 +77,15 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 
 	rootReal, err := filepath.EvalSymlinks(root)
 	if err != nil {
-		rootReal = root
+		return Resolved{}, err
 	}
 
-	var totalBytes int64
+	root = rootReal
+
+	totalBytes := int64(len(manifestData))
+	digests := []FileDigest{digest(manRel, manifestData)}
 	loaded := map[string]*loadedModule{}
 	var order []string
-	var loadErrs diag.ErrorList
 
 	var loadOne func(id string, depth int) error
 	loadOne = func(id string, depth int) error {
@@ -111,6 +113,7 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 		if err != nil {
 			return withSource(err, rel(root, abs))
 		}
+		digests = append(digests, digest(rel(root, abs), data))
 		totalBytes += int64(len(data))
 		if totalBytes > int64(MaxProjectBytes) {
 			return diag.ErrorList{{
@@ -122,23 +125,8 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 		if err := strictDecode(data, &mf); err != nil {
 			return withSource(err, rel(root, abs))
 		}
-		if mf.ModuleVersion != ModuleVersion {
-			return diag.ErrorList{{
-				Code: "MOD_VERSION", Stage: "schema", Pointer: "/module_version", Source: rel(root, abs),
-				Message: fmt.Sprintf("unsupported module_version %q", mf.ModuleVersion),
-			}}
-		}
-		if mf.Kind != "module" && mf.Kind != "entry" {
-			return diag.ErrorList{{
-				Code: "MOD_KIND", Stage: "schema", Pointer: "/kind", Source: rel(root, abs),
-				Message: "kind must be module or entry",
-			}}
-		}
-		if !nsRe.MatchString(mf.Namespace) {
-			return diag.ErrorList{{
-				Code: "MOD_NAMESPACE", Stage: "schema", Pointer: "/namespace", Source: rel(root, abs),
-				Message: "invalid namespace",
-			}}
+		if err := validateModuleContract(data, mf, rel(root, abs)); err != nil {
+			return err
 		}
 		lm := &loadedModule{ID: id, Path: abs, RelPath: rel(root, abs), File: mf, Depth: depth}
 		loaded[id] = lm
@@ -151,20 +139,52 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 		return nil
 	}
 
-	// Load entry closure only (Phase 7 full project = entry closure; Phase 8 shot = entry closure).
+	// Load the entry closure first; whole-project mode additionally checks listed orphans.
 	if err := loadOne(man.Entry, 0); err != nil {
 		if el, ok := err.(diag.ErrorList); ok {
 			return Resolved{}, el
 		}
 		return Resolved{}, err
 	}
-	_ = loadErrs
+	// Check unused listed files as graph inputs, without merging their entities.
+	closure := append([]string(nil), order...)
+	if allListed {
+		for _, m := range man.Modules {
+			if err := loadOne(m.ID, 0); err != nil {
+				return Resolved{}, err
+			}
+		}
+	}
 
 	// Cycle detection via DFS on import edges within loaded set.
 	if err := detectCycles(loaded); err != nil {
 		return Resolved{}, err
 	}
 
+	// Depth must be bounded along every path, even if a diamond loaded a
+	// dependency first through a shorter path. Cycles were rejected above.
+	depths := map[string]int{}
+	var graphDepth func(string) int
+	graphDepth = func(id string) int {
+		if d, ok := depths[id]; ok {
+			return d
+		}
+		d := 0
+		for _, im := range loaded[id].File.Imports {
+			if n := 1 + graphDepth(im.Module); n > d {
+				d = n
+			}
+		}
+		depths[id] = d
+		return d
+	}
+	for id := range loaded {
+		if graphDepth(id) > MaxImportDepth {
+			return Resolved{}, diag.ErrorList{{Code: "LIM_IMPORT_DEPTH", Stage: "semantic", Source: manRel, Message: "import depth exceeds limit"}}
+		}
+	}
+	// Only the selected entry closure participates in scene composition.
+	order = closure
 	entry := loaded[man.Entry]
 	if entry.File.Kind != "entry" {
 		return Resolved{}, diag.ErrorList{{
@@ -201,6 +221,7 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 	sm := SourceMap{
 		Objects: map[string]SourceRef{},
 		Lights:  map[string]SourceRef{},
+		Entry:   SourceRef{File: entry.RelPath, Module: man.Entry},
 	}
 	var decl spec.Declaration
 	decl.SchemaVersion = entry.File.SchemaVersion
@@ -213,29 +234,19 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 	sort.Strings(ids)
 
 	moduleMaps := map[string]idMap{}
-	aliasMaps := map[string]map[string]string{} // module id -> alias -> namespace
+	aliasMaps := map[string]map[string]string{} // module id -> alias -> imported module ID
 
 	for _, id := range ids {
 		lm := loaded[id]
-		aliasToNS := map[string]string{}
+		aliases := map[string]string{}
 		for _, im := range lm.File.Imports {
-			if !nsRe.MatchString(im.Alias) {
-				return Resolved{}, diag.ErrorList{{
-					Code: "MOD_IMPORT_ALIAS", Stage: "schema", Source: lm.RelPath,
-					Message: fmt.Sprintf("invalid import alias %q", im.Alias),
-				}}
-			}
-			dep, ok := loaded[im.Module]
-			if !ok {
-				return Resolved{}, diag.ErrorList{{
-					Code: "MOD_IMPORT_MISSING", Stage: "semantic", Source: lm.RelPath,
-					Message: fmt.Sprintf("import module %q not in closure", im.Module),
-				}}
-			}
-			aliasToNS[im.Alias] = dep.File.Namespace
+			aliases[im.Alias] = im.Module
 		}
-		aliasMaps[id] = aliasToNS
+		aliasMaps[id] = aliases
 		local := idMap{}
+		if id == man.Entry {
+			local[entry.File.Camera.ID] = entry.File.Camera.ID
+		}
 		qualify := func(localID string) string {
 			return lm.File.Namespace + "__" + localID
 		}
@@ -246,6 +257,9 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 					Pointer: fmt.Sprintf("/objects/%d/id", i), Source: lm.RelPath,
 					Message: "invalid id",
 				}}
+			}
+			if _, duplicate := local[o.ID]; duplicate {
+				return Resolved{}, diag.ErrorList{{Code: "SEM_DUPLICATE_ID", Stage: "semantic", Pointer: fmt.Sprintf("/objects/%d/id", i), Source: lm.RelPath, Message: "ambiguous local id"}}
 			}
 			qid := qualify(o.ID)
 			if _, exists := sm.Objects[qid]; exists {
@@ -269,6 +283,9 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 					Message: "invalid id",
 				}}
 			}
+			if _, duplicate := local[l.ID]; duplicate {
+				return Resolved{}, diag.ErrorList{{Code: "SEM_DUPLICATE_ID", Stage: "semantic", Pointer: fmt.Sprintf("/lights/%d/id", i), Source: lm.RelPath, Message: "ambiguous local id"}}
+			}
 			qid := qualify(l.ID)
 			if _, exists := sm.Lights[qid]; exists {
 				return Resolved{}, diag.ErrorList{{
@@ -291,7 +308,7 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 		local := moduleMaps[id]
 		aliasToNS := aliasMaps[id]
 		for i, tr := range lm.File.Animation {
-			target, err := resolveRef(tr.TargetID, lm.File.Namespace, local, aliasToNS, moduleMaps, loaded)
+			target, err := resolveRef(tr.TargetID, lm.File.Namespace, local, aliasToNS, moduleMaps)
 			if err != nil {
 				return Resolved{}, diag.ErrorList{{
 					Code: "SEM_TRACK_TARGET", Stage: "semantic",
@@ -328,10 +345,9 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 		return Resolved{}, err
 	}
 
-	files := make([]string, 0, len(order)+1)
-	files = append(files, manRel)
-	for _, id := range ids {
-		files = append(files, loaded[id].RelPath)
+	files := make([]string, 0, len(digests))
+	for _, d := range digests {
+		files = append(files, d.Path)
 	}
 	sort.Strings(files)
 
@@ -340,38 +356,31 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
 		SourceMap: sm,
 		RootDir:   root,
 		Files:     files,
+		Digests:   digests,
 		Shot:      shotID,
 	}, nil
 }
 
-func resolveRef(ref, selfNS string, local idMap, aliasToNS map[string]string, moduleMaps map[string]idMap, loaded map[string]*loadedModule) (string, error) {
+func resolveRef(ref, selfNS string, local idMap, aliases map[string]string, moduleMaps map[string]idMap) (string, error) {
 	if strings.Contains(ref, ":") {
-		parts := strings.SplitN(ref, ":", 2)
+		parts := strings.Split(ref, ":")
 		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 			return "", fmt.Errorf("invalid cross-module ref %q", ref)
 		}
-		alias, localID := parts[0], parts[1]
-		ns, ok := aliasToNS[alias]
+		moduleID, ok := aliases[parts[0]]
 		if !ok {
-			return "", fmt.Errorf("unknown import alias %q", alias)
+			return "", fmt.Errorf("unknown import alias %q", parts[0])
 		}
-		// Find module with that namespace among loaded.
-		for id, lm := range loaded {
-			if lm.File.Namespace == ns {
-				if q, ok := moduleMaps[id][localID]; ok {
-					return q, nil
-				}
-				return "", fmt.Errorf("unknown id %q in module alias %q", localID, alias)
-			}
+		if q, ok := moduleMaps[moduleID][parts[1]]; ok {
+			return q, nil
 		}
-		return "", fmt.Errorf("alias %q not loaded", alias)
+		return "", fmt.Errorf("unknown id %q in module alias %q", parts[1], parts[0])
 	}
 	if q, ok := local[ref]; ok {
 		return q, nil
 	}
-	// Already qualified?
 	if strings.Contains(ref, "__") {
-		return ref, nil
+		return "", fmt.Errorf("qualified target %q requires an explicit alias:local reference", ref)
 	}
 	return "", fmt.Errorf("unknown target_id %q in namespace %s", ref, selfNS)
 }
@@ -455,7 +464,7 @@ func resolveContainedPath(root, rootReal, relPath string) (string, error) {
 			Message: fmt.Sprintf("path escapes project root: %q", relPath),
 		}}
 	}
-	return abs, nil
+	return real, nil
 }
 
 func annotateSource(d diag.Diagnostic, sm SourceMap, decl spec.Declaration) diag.Diagnostic {
@@ -466,18 +475,24 @@ func annotateSource(d diag.Diagnostic, sm SourceMap, decl spec.Declaration) diag
 	if n, ok := indexFromPointer(d.Pointer, "/objects/"); ok && n >= 0 && n < len(decl.Objects) {
 		if ref, found := sm.Objects[decl.Objects[n].ID]; found {
 			d.Source = ref.File
+			d.Pointer = ref.Pointer + strings.TrimPrefix(d.Pointer, fmt.Sprintf("/objects/%d", n))
 			return d
 		}
 	}
 	if n, ok := indexFromPointer(d.Pointer, "/lights/"); ok && n >= 0 && n < len(decl.Lights) {
 		if ref, found := sm.Lights[decl.Lights[n].ID]; found {
 			d.Source = ref.File
+			d.Pointer = ref.Pointer + strings.TrimPrefix(d.Pointer, fmt.Sprintf("/lights/%d", n))
 			return d
 		}
 	}
 	if n, ok := indexFromPointer(d.Pointer, "/animation/"); ok && n >= 0 && n < len(sm.Tracks) {
 		d.Source = sm.Tracks[n].File
+		d.Pointer = sm.Tracks[n].Pointer + strings.TrimPrefix(d.Pointer, fmt.Sprintf("/animation/%d", n))
 		return d
+	}
+	if strings.HasPrefix(d.Pointer, "/scene") || strings.HasPrefix(d.Pointer, "/camera") || d.Pointer == "/schema_version" || d.Pointer == "/asset_pack_version" {
+		d.Source = sm.Entry.File
 	}
 	return d
 }

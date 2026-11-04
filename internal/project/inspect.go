@@ -1,9 +1,7 @@
 package project
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"sort"
 )
@@ -49,6 +47,17 @@ func Inspect(manifestPath string) (InspectReport, error) {
 	if man.Kind != "project" {
 		return InspectReport{}, fmt.Errorf("not a project manifest")
 	}
+	if man.ProjectVersion != ProjectVersion {
+		return InspectReport{}, fmt.Errorf("unsupported project_version %q", man.ProjectVersion)
+	}
+	if err := validateShots(man, rel(root, abs)); err != nil {
+		return InspectReport{}, err
+	}
+	rootReal, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return InspectReport{}, err
+	}
+	root = rootReal
 	rep := InspectReport{
 		ProjectVersion: man.ProjectVersion,
 		Entry:          man.Entry,
@@ -58,20 +67,27 @@ func Inspect(manifestPath string) (InspectReport, error) {
 	}
 	for _, m := range man.Modules {
 		im := InspectModule{ID: m.ID, Path: m.Path}
-		absM, err := resolveContainedPath(root, root, m.Path)
-		if err == nil {
-			if raw, err := os.ReadFile(absM); err == nil {
-				var mf ModuleFile
-				if json.Unmarshal(raw, &mf) == nil {
-					im.Kind = mf.Kind
-					im.Namespace = mf.Namespace
-					for _, imp := range mf.Imports {
-						im.Imports = append(im.Imports, imp.Module)
-					}
-					sort.Strings(im.Imports)
-				}
-			}
+		absM, err := resolveContainedPath(root, rootReal, m.Path)
+		if err != nil {
+			return InspectReport{}, err
 		}
+		raw, err := readBounded(absM, MaxFileBytes)
+		if err != nil {
+			return InspectReport{}, withSource(err, m.Path)
+		}
+		var mf ModuleFile
+		if err := strictDecode(raw, &mf); err != nil {
+			return InspectReport{}, withSource(err, m.Path)
+		}
+		if err := validateModuleContract(raw, mf, m.Path); err != nil {
+			return InspectReport{}, err
+		}
+		im.Kind = mf.Kind
+		im.Namespace = mf.Namespace
+		for _, imp := range mf.Imports {
+			im.Imports = append(im.Imports, imp.Module)
+		}
+		sort.Strings(im.Imports)
 		rep.Modules = append(rep.Modules, im)
 	}
 	return rep, nil

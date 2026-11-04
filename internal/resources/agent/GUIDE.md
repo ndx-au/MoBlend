@@ -48,17 +48,18 @@ Use when separate agents own different parts of a production. Detection is by `k
 - **Entry** (`kind: entry`): owns `schema_version`, `asset_pack_version`, `scene`, `camera`; may declare objects/lights/animation and `imports`.
 - **Module** (`kind: module`): objects/lights/animation and `imports` only.
 - **Namespaces**: each file has `namespace` (`^[A-Za-z][A-Za-z0-9]*$`). Resolved IDs are `{namespace}__{local}`.
-- **Cross-module refs**: `{alias}:{local_id}` after an explicit import; same-file refs stay bare local IDs.
+- **Import aliases**: unique within each file; duplicate aliases are errors. The entry camera keeps its bare ID for camera animation.
+- **Cross-module refs**: `{alias}:{local_id}` after an explicit import; same-file refs stay bare local IDs. Do not write resolved `namespace__id` strings to bypass imports.
 - **Limits**: ≤32 modules, import depth ≤8, ≤256 KiB/file, ≤1 MiB project; resolved scene limits still apply.
 - **Ownership**: one agent edits one module file; coordinate only on shared entry/camera and import contracts. Do not invent directory scans or implicit overrides.
 - **Inspect** lists modules/imports without resolving the whole graph into a scene.
-- **Compile** emits `source_map.json` and `dependencies.json` beside script/data (not part of compile identity).
+- **Compile** writes to a fresh `moblend-job-*` directory under `--out` (nested under the selected shot ID) and prints the artifact paths. It emits `source_map.json` and `dependencies.json` beside script/data (not part of compile identity).
 
 Examples: `examples/projects/title_modular/`, `examples/projects/three_shots/`.
 
 ## Shots (independent targets)
 
-- Multi-shot projects require `--shot <id>` (or sole-shot default). `--all-shots` validates every shot closure.
+- Multi-shot projects require `--shot <id>` (or sole-shot default). `--all-shots` validates every shot closure and the entire listed dependency graph.
 - Selected shot loads **only** its dependency closure; a broken unselected shot does not block the selected one.
 - Preview/render with `--out DIR --shot ID` nests under `DIR/<shot>/` for isolation. Concurrent jobs stay in separate job directories.
 
@@ -80,6 +81,9 @@ Examples: `examples/projects/title_modular/`, `examples/projects/three_shots/`.
 | `CAT_UNKNOWN_ASSET` | Bad `asset_id` | `assets list` |
 | `SEM_DUPLICATE_ID` | ID clash | Unique ids across camera/lights/objects |
 | `PROJ_CYCLE` / `PROJ_PATH_ESCAPE` | Bad module graph/path | Fix imports; keep paths inside the project root |
+| `MOD_DUP_IMPORT_ALIAS` | Alias reused in one file | Give each imported module a distinct alias |
+| `MOD_ENTRY_ONLY` | Entry settings in a module | Move scene/camera/version fields to the entry |
+| `PROJ_FILE_TYPE` / `LIM_FILE_BYTES` | Nonregular or oversized input | Use a bounded regular JSON file |
 | `SHOT_REQUIRED` | Multi-shot, no selection | Pass `--shot` or `--all-shots` |
 | `ENV_BLENDER_*` | Doctor/preflight | Install/pin Blender 5.3 |
 
@@ -100,3 +104,13 @@ Machine diagnostics go to stdout with `--json`. Project diagnostics include `sou
 2. `preview --frame N` and inspect PNG + `scene.blend`
 3. Adjust text/colours/layout/params; re-validate
 4. `render` for full frame range; check `manifest.json` status `complete`
+
+## Output and snapshot safety
+
+Shot IDs must match `^[A-Za-z][A-Za-z0-9_]*$`. Compile, preview and render allocate unique jobs under the output parent, including when the sole shot is selected by default. An escaping shot-directory symlink is rejected.
+
+Only `manifest.json` with status `complete` establishes rendering success. PNGs or `.blend` alone may be partial artifacts from a failed job; render success requires the exact inclusive expected frame set. Failures retain `manifest.failed.json`. Job directories are retained for diagnosis; remove unwanted jobs manually after inspection.
+
+Dependency hashes describe bytes read during load, including the manifest, and never re-read project files after rendering. Coordinate edits before starting jobs: this is a per-file snapshot, not an atomic snapshot across concurrent filesystem edits. The loader follows the containment-checked real path; adversarial directory replacement races remain outside the v1 execution-hygiene guarantee.
+
+Version probes and render jobs share process-group cancellation on tested Linux, private configuration directories, and 64 KiB retained log limits with explicit truncation. Successful preview/frame PNGs are fully decoded and checked against declared dimensions before the completion manifest is written.

@@ -218,3 +218,20 @@ func escapePointer(s string) string {
 	s = strings.ReplaceAll(s, "/", "~1")
 	return s
 }
+
+// CheckJSON rejects duplicate keys, trailing values, and non-finite numbers for
+// all versioned input documents before their own typed schema decoding.
+func CheckJSON(data []byte) error {
+	if err := rejectDuplicateKeys(data); err != nil {
+		return err
+	}
+	dec := json.NewDecoder(bytes.NewReader(data))
+	var value any
+	if err := dec.Decode(&value); err != nil {
+		return err
+	}
+	if err := rejectTrailing(dec); err != nil {
+		return err
+	}
+	return rejectNonFinite(data)
+}

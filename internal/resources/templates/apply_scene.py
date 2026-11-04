@@ -261,7 +261,7 @@ def configure_scene(scene, sc: dict) -> None:
             bg.inputs[0].default_value = srgb_hex_to_linear(sc["world_color"])
 
 
-def iter_action_fcurves(action):
+def iter_action_fcurves(action, slot=None):
     """Yield FCurves from legacy or layered (Blender 5+) actions."""
     if hasattr(action, "fcurves") and action.fcurves:
         for fc in action.fcurves:
@@ -270,6 +270,8 @@ def iter_action_fcurves(action):
     for layer in getattr(action, "layers", []) or []:
         for strip in getattr(layer, "strips", []) or []:
             for bag in getattr(strip, "channelbags", []) or []:
+                if slot is not None and bag.slot_handle != slot.handle:
+                    continue
                 for fc in getattr(bag, "fcurves", []) or []:
                     yield fc
 
@@ -281,6 +283,16 @@ def apply_animation(tracks: list) -> None:
             raise RuntimeError(f"missing animation target {track['target_id']}")
         prop = track["property"]
         interp = track.get("interpolation") or "linear"
+        owner = obj
+        data_path = "rotation_euler" if prop == "rotation_euler_deg" else prop
+        socket = None
+        if prop.startswith("material."):
+            mat = obj.data.materials[0]
+            bsdf = next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+            socket_name = "Base Color" if prop == "material.base_color" else "Roughness"
+            socket = bsdf.inputs[socket_name]
+            owner = mat.node_tree
+            data_path = socket.path_from_id("default_value")
         for key in track["keys"]:
             frame = int(key["frame"])
             value = key["value"]
@@ -294,25 +306,19 @@ def apply_animation(tracks: list) -> None:
                 obj.scale = value
                 obj.keyframe_insert(data_path="scale", frame=frame)
             elif prop == "material.base_color":
-                mat = obj.data.materials[0]
-                bsdf = mat.node_tree.nodes.get("Principled BSDF")
-                if bsdf is None:
-                    for n in mat.node_tree.nodes:
-                        if n.type == "BSDF_PRINCIPLED":
-                            bsdf = n
-                            break
-                bsdf.inputs["Base Color"].default_value = srgb_hex_to_linear(value)
-                bsdf.inputs["Base Color"].keyframe_insert("default_value", frame=frame)
+                socket.default_value = srgb_hex_to_linear(value)
+                socket.keyframe_insert("default_value", frame=frame)
             elif prop == "material.roughness":
-                mat = obj.data.materials[0]
-                bsdf = next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
-                bsdf.inputs["Roughness"].default_value = float(value)
-                bsdf.inputs["Roughness"].keyframe_insert("default_value", frame=frame)
+                socket.default_value = float(value)
+                socket.keyframe_insert("default_value", frame=frame)
             else:
                 raise RuntimeError(f"unsupported anim property {prop}")
         # Interpolation: Blender 5.x layered actions expose fcurves via channelbags.
-        if obj.animation_data and obj.animation_data.action:
-            for fc in iter_action_fcurves(obj.animation_data.action):
+        animation = owner.animation_data
+        if animation and animation.action:
+            for fc in iter_action_fcurves(animation.action, getattr(animation, "action_slot", None)):
+                if fc.data_path != data_path:
+                    continue
                 for kp in fc.keyframe_points:
                     if interp == "step":
                         kp.interpolation = "CONSTANT"

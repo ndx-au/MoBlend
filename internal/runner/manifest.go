@@ -60,7 +60,7 @@ func WriteSuccessManifest(outDir string, mode string, blenderPath string, versio
 }
 
 // WriteFailedMarker writes manifest.failed.json without status complete.
-func WriteFailedMarker(outDir string, code, message string) error {
+func WriteFailedMarker(outDir string, code, message string, shot ...string) error {
 	if err := os.MkdirAll(outDir, 0o755); err != nil {
 		return err
 	}
@@ -68,6 +68,9 @@ func WriteFailedMarker(outDir string, code, message string) error {
 		"status":  "failed",
 		"code":    code,
 		"message": message,
+	}
+	if len(shot) > 0 && shot[0] != "" {
+		payload["shot"] = shot[0]
 	}
 	data, err := json.MarshalIndent(payload, "", "  ")
 	if err != nil {

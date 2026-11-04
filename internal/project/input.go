@@ -1,7 +1,7 @@
 package project
 
 import (
-	"os"
+	"path/filepath"
 
 	"github.com/ndx-au/MoBlend/internal/compile"
 	"github.com/ndx-au/MoBlend/internal/spec"
@@ -22,7 +22,7 @@ type LoadResult struct {
 // LoadSceneOrProject loads path as scene JSON or project manifest.
 // shot is used only for projects with shots (Phase 8); empty selects default rules.
 func LoadSceneOrProject(path, shot string) (LoadResult, error) {
-	data, err := os.ReadFile(path)
+	data, err := readBounded(path, MaxFileBytes)
 	if err != nil {
 		return LoadResult{}, err
 	}
@@ -37,7 +37,11 @@ func LoadSceneOrProject(path, shot string) (LoadResult, error) {
 		}
 		return LoadResult{Decl: res.Decl, IsProject: false}, nil
 	}
-	resolved, err := LoadAndResolveShot(path, shot)
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return LoadResult{}, err
+	}
+	resolved, err := resolveProjectSnapshot(abs, data, shot, false)
 	if err != nil {
 		return LoadResult{}, err
 	}

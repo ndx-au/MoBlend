@@ -6,6 +6,10 @@ You (or an agent) write a small versioned **JSON** scene. **`blendctl`** (Go) va
 
 **Status:** Linux amd64 release candidate `0.1.0-rc1` (roadmap phases 0–8). Blender **5.3** family required. macOS/Windows not verified yet. Multi-file projects and independent shots are supported on top of single-file scenes.
 
+## Why a declarative interface
+
+MoBlend separates an agent's scene decisions from the Blender operations that implement them. The hypothesis is that explicit, validated declarations can reduce hidden-state and sequencing errors while making revisions easier to inspect. [Declarative interfaces for LLMs and the design of MoBlend](docs/DECLARATIVE-INTERFACES-FOR-LLMS.md) develops the argument, its limits and how to evaluate it.
+
 ## Quick start
 
 ```bash
@@ -94,3 +98,5 @@ Layout: `cmd/blendctl`, `internal/{spec,validate,compile,project,runner,resource
 ## License notes
 
 Bundled DejaVu Sans: see `internal/resources/fonts/DejaVuSans.LICENSE`. Public release publication still requires owner authorization.
+
+Output safety: `--out` is a parent directory. Compile, preview and render create a fresh `moblend-job-*` directory, nested under the selected shot ID for projects with shots. Compile prints its actual paths. Only a `manifest.json` marked `complete` proves render success; partial PNGs and `.blend` files can remain after a failure. Job artifacts remain until manually removed.

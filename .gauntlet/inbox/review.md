@@ -1,0 +1,2241 @@
+# MoBlend Gauntlet after-pass — fresh review after round 1 repairs
+
+Target: `.planning/ROADMAP.md`; requested follow-up to round 1's twelve high-priority findings. Review current execution against the original roadmap. This is a review-only pass; no implementation changes are authorized by this review task.
+
+Round 1 artifacts are preserved in `.gauntlet/history/round-1/`. Prior high findings were reported repaired, but assess actual current code independently; do not assume the implementation summary is correct. Retain genuine residual findings and report new regressions. Severity should reflect concrete supported use and the documented execution-hygiene trust boundary; identify hypothetical hostile filesystem limitations as such. Do not claim tests ran unless you actually ran them or clearly attribute prior recorded results.
+
+The working tree contains the uncommitted repair delta. An unrelated new `docs/DECLARATIVE-INTERFACES-FOR-LLMS.md` appeared after that implementation; exclude it from this repair review and preserve it. Source code should remain frozen during critic review. No model-authoring, stable-release Blender, non-Linux or public-publish claims are newly established.
+
+## Original roadmap at HEAD
+
+# Implementation roadmap
+
+Status: Phases 0–6 executed; Linux amd64 `0.1.0-rc1` recorded in phase evidence. Phase 5 model-based authoring evaluation remains blocked; automated fixture results are not model repair-loop evidence. Additional platform support and public publication are not claimed. Phase 7 is the next implementation phase; Phase 8 follows it.
+
+Reader: an implementation agent continuing from the existing RC. Start with Phase 7's PLAN and CONTEXT; preserve the working single-file compiler and its verification history. The Phase 0–6 descriptions below remain the original baseline, not instructions to restart completed work. Phases are dependency gates, not calendar promises.
+
+Verification companion: [test and agent evaluation playbook](../docs/TEST-PLAYBOOK.md). Use its baseline cases now, module cases for Phase 7, and shot cases for Phase 8. Scenario definitions are not pass evidence.
+
+## Phase 0 — Prove the Blender boundary
+
+**Outcome:** a Go program drives a real headless Blender render using an embedded minimal asset pack.
+
+Tasks:
+1. Initialize module, basic CI and test harness. Select and pin a maintained Go toolchain and an available supported Blender build using official documentation and local execution evidence.
+2. Create a first-party base scene from a checked-in Blender Python authoring script: camera, light, simple object, known material, explicit render/colour settings. Save the small `.blend` pack.
+3. Embed and extract the pack; launch Blender with a trusted smoke script, change one property, save a scene, render one PNG.
+4. Verify command argument ordering, Python failure exit, CPU-compatible rendering, fonts, configuration isolation and cancellation on Linux amd64.
+5. Record asset checksum, versions, invocation, output and observed constraints in the phase context. Create a supported-environment table.
+
+**Gate:** real PNG with expected dimensions and nonempty content; saved scene reopens; deliberate Python exception returns failure; executable works offline with Blender installed. If the boundary fails, resolve it before schema expansion.
+
+## Phase 1 — Define the smallest useful declaration
+
+**Depends on:** 0. **Outcome:** an executable language contract.
+
+Tasks:
+1. Write schema v1, catalogue contract and Go input types. Freeze units, colour handling, frame semantics, defaults, limits and diagnostic shape.
+2. Implement strict parsing, duplicate-key rejection, version checking, schema and semantic validation, and canonical normalization.
+3. Define only the fields needed by title, pedestal and chart examples. Author positive and negative fixtures before implementing further capabilities.
+4. Add `schema`, `assets list/describe`, and `validate` CLI surfaces. Ensure validation is local and does not launch Blender.
+
+**Gate:** all positive fixtures validate; every negative fixture has the expected stable code and JSON pointer. Schema/model parity is checked. Record any deliberately deferred fields.
+
+## Phase 2 — Deliver the first useful composition
+
+**Depends on:** 1. **Outcome:** JSON title scene → editable Blender scene → still image.
+
+Tasks:
+1. Lower normalized declarations to typed operations; generate Python entry point and canonical data using trusted templates.
+2. Implement text, basic forms, materials, transform, camera and lighting bindings. Avoid selection/context dependence.
+3. Add `compile`, retaining readable artifacts for debugging. Build from the pristine pack for every execution.
+4. Test malicious-looking text and Unicode round-trip, stable ordering, repeated compilation, missing bindings and saved-scene properties.
+
+**Gate:** the title example renders in Blender; changed text/colour/layout is visible; a probe verifies object IDs, transforms, materials and camera. Compilation is byte-stable and requires no Blender runtime.
+
+## Phase 3 — Add expressive, bounded motion
+
+**Depends on:** 2. **Outcome:** all three reference compositions can be expressed and animated.
+
+Tasks:
+1. Implement typed keyframe tracks for approved transforms, selected material values and asset parameters. Add step/linear interpolation, then the single documented easing preset.
+2. Author a column-chart Geometry Nodes asset with bounded values and published input contracts. Package any required font with redistribution notices.
+3. Verify instance isolation and socket identifiers; reject unsupported animation targets and incompatible pack versions.
+4. Finish title reveal, geometric product pedestal and chart declarations. Add one fixed compositor look only if Phase 0 verified it.
+
+**Gate:** Blender probes evaluate representative frames and check expected values within defined tolerances. Two asset instances stay independent. All three short animations render with correct frame counts. No arbitrary node graphs, rigs or simulations enter this phase.
+
+## Phase 4 — Make rendering dependable
+
+**Depends on:** 3. **Outcome:** a user-facing local CLI handles success and failure predictably.
+
+Tasks:
+1. Complete `doctor`, `preview`, and `render`; add structured diagnostics, stable exit categories and stdout/stderr discipline.
+2. Implement unique job directories, safe output handling, resource integrity checks, timeouts, cancellation, bounded logs and complete/failed manifests.
+3. Explicitly configure render engine, resolution, frame range, FPS, samples, seed where applicable and colour pipeline. Store all effective settings.
+4. Exercise missing Blender, incompatible version, unwritable destinations, process failures, concurrent jobs, cancellation and repeat runs.
+5. Reopen delivered `.blend` files and verify editability and expected scene structure.
+
+**Gate:** automated end-to-end success and failure matrix passes. Incomplete output cannot be mistaken for a finished render. Jobs do not mutate the embedded pack or overwrite unrelated files.
+
+## Phase 5 — Prove agent usability without RAG
+
+**Depends on:** 4. **Outcome:** an agent can author and repair supported scenes from the shipped local documentation.
+
+Tasks:
+1. Write a compact agent guide with supported concepts, exact commands, common diagnostics, worked examples and explicit unsupported requests.
+2. Make `guide` print the embedded documentation. Keep schema and catalogue accessible on demand through exact-ID commands; no semantic index or retrieval infrastructure.
+3. Run an evaluation set of at least 12 supported briefs spanning the three compositions: text changes, palettes, timing, camera framing, chart values. Add a separate set of deliberate unsupported requests.
+4. Record initial validation, repair attempts, final render success, brief adherence and out-of-scope handling. Document model/version/context if a model is used; keep it an evaluation dependency only.
+5. Generate contact sheets and review typography, framing, intersections, chart fidelity, lighting and animation readability. Fix asset or compiler problems revealed by review.
+
+**Proposed gate:** at least 10 of 12 supported briefs render and meet their checklist within two diagnostic-driven revisions; all unsupported cases are explicitly identified without unsafe fallback. Keep unsupported cases in a separate set so they do not inflate the score. Core compiler/integration tests all pass. If no model access or visual reviewer is available, mark that evidence blocked rather than fabricate it.
+
+## Phase 6 — Package and hand off v1
+
+**Depends on:** 5. **Outcome:** an installable, documented release candidate.
+
+Tasks:
+1. Produce release binaries with embedded schema, docs, catalogue, templates and assets. Include checksums, version reporting, asset/font attribution and build instructions.
+2. Run a clean-environment offline onboarding test on Linux amd64. Test macOS arm64 and Windows amd64 before advertising support; document untested targets as experimental or omit them.
+3. Check all example declarations against the final schema and rerun integration/render baselines on the pinned environment.
+4. Write troubleshooting, limitations, compatibility policy, reproducible asset-build instructions and a short human/agent quick start.
+5. Reconcile requirement status, phase evidence and known issues. Prepare release artifacts; public publication requires owner authorization.
+
+**Gate:** REQUIREMENTS release gate is met; an independent onboarding run produces the reference outputs using only the documented prerequisites. Report measured binary size and render time with hardware/context rather than inventing performance targets.
+
+## Phase 7 — Compose projects from explicit local modules
+
+**Status:** complete (2026-11-04). **Depends on:** executed baseline 0–6; blocked LLM evaluation remains tracked separately and must not be claimed as satisfied. **Outcome:** agents own separate JSON modules that resolve to one validated scene through the existing compiler.
+
+Tasks:
+1. Introduce a separately versioned project manifest and module schema. Keep scene schema `1.0.0` and existing single-file commands compatible. Specify the contract in the phase CONTEXT before implementation.
+2. Add a Go project loader/resolver ahead of the current declaration validator/compiler. List modules explicitly, resolve project-relative local imports, reject missing files and cycles, and enforce project-root containment including symlink targets.
+3. Namespace object/light IDs and rewrite typed animation references. Reject duplicate namespaces, IDs, unresolved references, and conflicting tracks. Use explicit imports for cross-module references; never depend on directory scanning or load order. Keep camera, render settings and asset-pack selection in the scene entry.
+4. Preserve source file + original JSON pointer through resolution, normalization and semantic validation. Add source-aware diagnostics without removing existing single-file diagnostic fields. Emit a source map separately from deterministic script/data.
+5. Bound module count, dependency depth, per-file bytes and total project bytes. Apply existing scene/render limits to the fully resolved declaration; splitting files must not bypass limits. Reject unsupported module/project versions.
+6. Extend validate, compile, preview and render to accept a project manifest. Add an inspect command or equivalent machine-readable dependency listing so agents can identify entry points, imports and owned files without reading the whole project.
+7. Supply a modular version of an existing reference scene and a paired monolithic fixture. Update shipped schema/guide and document file ownership conventions for concurrent agents.
+
+**Gate:** MOD-01 through MOD-07 pass. Equivalent modular and monolithic fixtures produce equal normalized scene data and script bytes and equivalent Blender scene properties/render outputs under the pinned environment. Test imports reordered, key order changed, a different project checkout path, duplicate names, cycles, missing dependencies, traversal, escaping symlinks and aggregate-limit violations. Old single-file fixtures remain valid without migration. Validate and compile work offline without Blender. Preview/render work on project input and report originating files for failures. Phase 7 includes a dedicated PLAN and CONTEXT; implementations must record verification evidence.
+
+## Phase 8 — Build and render selected shots independently
+
+**Status:** complete (2026-11-04). **Depends on:** 7. **Outcome:** a large project contains multiple shot entries; one selected shot resolves and builds without compiling or rendering all others.
+
+Tasks:
+1. Extend the project manifest with explicit shot IDs and entry files. Each shot owns its scene settings, camera and timeline; common modules are imported explicitly. Modules contain no implicit global mutable state.
+2. Add shot listing and explicit selection for validate, compile, preview and render. One-shot projects may select their sole shot by default; multi-shot projects require a selection or explicit all-shots mode. Document behavior before implementation.
+3. Validate manifest structure globally, then load and validate the selected shot's dependency closure. Missing/unresolved imports in an unselected shot do not block the selected shot; an explicit project-wide validation checks all shots.
+4. Produce isolated per-shot output directories and manifests. Record selected shot, relative source dependencies and content hashes, compiler/resources/environment and effective settings. Preserve immutable inputs across concurrent shot jobs.
+5. Ship a three-shot example reusing a shared module. Demonstrate bounded-context agent ownership: edit one shot file, build that shot, and verify unrelated shots' resolved data is unchanged.
+
+**Gate:** SHOT-01 through SHOT-03 pass. A selected shot resolves only its dependency closure, produces editable scene/frames and a dependency manifest, and does not launch Blender for other shots. Explicit all-project validation reports a deliberately broken unselected shot. Concurrent shot outputs remain isolated. A changed shared module affects all dependent shot hashes; an unrelated edit leaves the selected shot's resolved scene unchanged. No incremental cache, scheduler, video assembly or automatic all-shot rendering is required.
+
+## Sequencing discipline
+
+Executed baseline: 0 → 1 → 2 → 3 → 4 → 5 → 6, subject to recorded verification caveats. New implementation: 7 → 8. Preserve the existing RC and blocked model-evaluation claim while extending composition. Phase 7 adds a source-resolution layer over the working compiler; Phase 8 adds independent shot targets. Parameterized components and content-addressed build caching are deferred. Go, local/offline operation and no RAG remain fixed. Do not introduce MCP, a GUI, a provider abstraction, arbitrary code or retrieval infrastructure in these phases.
+
+
+## Current execution evidence
+
+Changed-file inventory:
+
+```text
+ M .planning/ARCHITECTURE.md
+ M .planning/BACKLOG.md
+ M .planning/ROADMAP.md
+ M .planning/STATE.md
+ M .planning/phases/07-modular-projects/VERIFICATION.md
+ M .planning/phases/08-independent-shots/VERIFICATION.md
+ M README.md
+ M agent/GUIDE.md
+ M cmd/blendctl/main.go
+ M docs/TEST-PLAYBOOK.md
+ M internal/project/inspect.go
+ M internal/project/load.go
+ M internal/project/provenance.go
+ M internal/project/resolve.go
+ M internal/project/resolve_test.go
+ M internal/project/types.go
+ M internal/resources/agent/GUIDE.md
+ M internal/resources/schema/project_v1.json
+ M internal/runner/apply.go
+ M internal/runner/eval_integration_test.go
+ M internal/runner/project_integration_test.go
+ M internal/runner/runner.go
+ M internal/spec/decode.go
+?? .gauntlet/
+?? .planning/fixes/
+?? .progress/fixes/F000001.gauntlet-round-one-hardening.md
+?? .progress/general/G000006.explain-declarative-authoring-thesis.md
+?? cmd/blendctl/main_test.go
+?? cmd/blendctl/signal_linux_test.go
+?? docs/DECLARATIVE-INTERFACES-FOR-LLMS.md
+?? internal/project/hardening_test.go
+?? internal/runner/hardening_linux_test.go
+?? internal/runner/process_other.go
+?? internal/runner/process_unix.go
+```
+
+Prior implementation session recorded `go test ./... -count=1 -timeout 10m` passing 103 tests/subtests (including Blender), `go test -race ./internal/project ./cmd/blendctl -count=1` passing 42, formatting/vet/diff checks clean. Treat these as recorded evidence; inspect regressions and run targeted probes as needed. Actual tests and source are authoritative over completion prose.
+
+## Repair verification and acknowledged residuals
+
+# Gauntlet round 1 repair verification
+
+Date: 2026-11-05 (Australia/Sydney). Implementation: twelve high-priority findings repaired; independent re-judging pending refreshed critic reports.
+
+## Environment and commands
+
+Linux amd64; Blender **5.3.0 Beta**, build **7e7c173d45c8**, same local development pin as Phase 0. This does not establish a stable-release Blender baseline, non-Linux support or public publication. Official pinned Scene API documentation was fetched/read from `https://docs.blender.org/api/5.3/bpy.types.Scene.html` (HTTP 200), including the requirement to use `frame_set` to evaluate animation.
+
+Fresh checks after the final Go changes (commands executed via `rtk`):
+
+| Exact command | Result |
+|---|---|
+| `gofmt -l .` | exit 0, empty output |
+| `go vet ./...` | exit 0, no issues |
+| `go test ./... -count=1 -timeout 10m` | exit 0, **103 tests/subtests passed across 8 packages**, including real Blender integrations |
+| `go test -race ./internal/project ./cmd/blendctl -count=1` | exit 0, **42 tests/subtests passed across 2 packages** |
+| `git diff --check` | exit 0 |
+
+Blender was available throughout; integration tests were executed, not skipped. The real Blender equivalence test passed its reopened scene assertions and image checks. No new human aesthetic/HD review was performed; no model-based authoring/refusal evaluation was performed.
+
+## Twelve high-priority findings
+
+| Judge order | Repair / regression evidence |
+|---|---|
+| 1 | `TestAggregateObjectLimit` requires exactly `LIM_OBJECTS`; removed message heuristics and alternate codes. |
+| 2 | `TestValidateAllShotsReportsBrokenUnselected` invokes `cmdValidate --all-shots --json`, requires `PROJ_FILE_MISSING` attributed to `bad`, and separately verifies selected `good` succeeds. |
+| 3 | BACKLOG now records shipped composition/shots and deferred parameterized modules/cache. |
+| 4 | CLI preview/render/smoke use `signal.NotifyContext`; `TestCLISignalsCancelJobs` sends real SIGINT/SIGTERM to a built CLI, requires cancellation output, dead descendants and preview/render failed markers. |
+| 5 | Compile creates unique shot-nested jobs. `TestCompileConcurrentShotOutputs` runs intro/outro/intro concurrently into the same parent and checks all artifact sets. |
+| 6 | Resolver hashes each loaded byte buffer, including manifest; dependency manifest copies retained digests. `TestDependencyManifestUsesLoadSnapshot` removes source files after loading and requires unchanged provenance. |
+| 7 | `TestGraphBounds` asserts exact depth>8, file bytes, project bytes, >32 modules and absolute-path diagnostics. Actual reads are byte-bounded. Depth also checks longest DAG path to prevent diamond shortcuts. |
+| 8 | Non-shot resolution and whole-project validation check every listed module graph for missing files, versions, containment, cycles and graph limits, while only entry closure entities are merged. `TestUnreachableListedGraphRejected` tests missing/version/cycle orphans; selected-shot isolation remains tested. |
+| 9 | `TestModularFlatPreviewEquivalence` reopens both Blender files, asserts expected title/camera state, compares object IDs/types/transforms/material colors/roughness, camera lens, resolution/FPS/range. Decoded 64×64 PNGs require >=8 distinct colors and <=1/255 channel differences under the same CPU pin. |
+| 10 | Render success requires exactly the inclusive expected frame names with regular nonempty files, plus scene.blend. `TestApplyRejectsIncompleteFrameSets` rejects partial, misnamed and extra sets with failed markers and no success manifest. Real `TestRenderWritesManifestAndFrames` still passes. |
+| 11 | Linux/macOS launcher configures a dedicated process group and kills it on context cancellation. `TestRunTerminatesDescendants` verifies both explicit cancellation and timeout kill parent/child; `TestApplyTimeoutHasFailedMarker` checks terminal status. Linux zombie states count as terminated, not running children. Other platforms remain unclaimed. |
+| 12 | Shot ID regex is enforced in schema and loader globally. Output joining rechecks IDs and resolved containment, including escaping symlinks. `TestUnsafeShotIDsRejectedGlobally` and `TestOutputParentRejectsEscape` cover traversal/absolute/separator IDs and output symlinks. |
+
+## Related medium/low items
+
+Also repaired: default environment uses a minimal allowlist and private HOME/XDG/TMPDIR (`TestRunEnvironmentIsolated`); compile cannot overwrite previous CLI outputs; dependency writes occur before success and errors propagate; post-job failures attempt terminal failed markers; DetectKind requires explicit project kind; exact traversal/missing diagnostics; inspect surfaces path/read/unknown-field/version errors and canonicalizes its root; duplicated/trailing JSON is rejected for modules/projects; all-shots help; stale roadmap/Phase 5 claims; fixture-smoke naming; unsupported JSON versus natural-language evaluation distinction; same-parent pairwise concurrent preview isolation. Guide copies remain synchronized.
+
+Remaining medium/low work from the original superplan is retained, not dropped:
+
+- `eval-png-not-brief`: per-brief independent structural/checklist oracles and model repair-loop/unsupported prompt runs remain pending. Renaming fixture smoke does not satisfy them.
+- `s04-failed-shot-missing`: concurrent real-shot integration still covers three successful shots. Synthetic runner/CLI failure tests cover failed jobs separately; the combined concurrent successful/failed-shot matrix remains open.
+- `shared-mod-torn-load`: per-file snapshots are immutable after read; no atomic filesystem-wide snapshot while agents edit several files. Coordinate input edits before load; document this limitation.
+- `path-contain-toctou` / `symlink-containment-toctou`: reads use the containment-checked real path and fail closed on root resolution. No openat/O_NOFOLLOW defense against concurrent replacement of directory components; execution hygiene is not a hostile-filesystem sandbox.
+- `ease-inout-probe-gap`: a dedicated interior easing probe remains open.
+- `jobdir-never-cleaned`: manual retention is documented; automatic cleanup/latest pointer is deferred.
+- Inspect is strict about JSON fields and versions but does not replace full semantic validation of module contents; use validate for that gate.
+- Compile's internal writer accepts caller-owned destinations; the public CLI guarantees fresh directories. Terminal marker writes are best-effort when storage itself fails. Logs remain captured in memory. The separate Doctor `--version` probe still inherits its parent environment; the new allowlist is applied by Run to execution jobs.
+- `shot02-provenance-rehash-disk`: the re-read bug is fixed. CYCLES/CPU effective fields match the fixed template engine/device contract; configurable engine/device is not a current feature.
+
+Phase 5 proposed >=10/12 diagnostic repair-loop gate remains **unmet/blocked**, with smoke-only visual approval preserved. Stable Blender baseline, non-Linux verification and public publication remain open as before.
+
+## Gauntlet compose
+
+The literal `node scripts/judge.mjs compose` failed because this repository has no judge script. Located the installed implementation and ran:
+
+`node /home/terence/code/ndx-skills/.cursor/skills/ndx-gauntlet/scripts/judge.mjs compose`
+
+Result: exit 1, `gauntlet fail-closed: critic files incomplete`; all five critics are **stale (older than review)**. Updated `.gauntlet/inbox/review.md` and `.gauntlet/inbox/implementation.diff` contain the repair context and tracked/new Go delta. Original critic JSON and round-one outbox remain unchanged; no new ship verdict is claimed. Refresh the critics against this diff before composing the next verdict. Findings were not erased, relabeled as passed, or replaced with stubs.
+
+
+## Full current tracked diff plus new Go regression files
+
+```diff
+diff --git a/.planning/ARCHITECTURE.md b/.planning/ARCHITECTURE.md
+index 3afb9b2..5a80491 100644
+--- a/.planning/ARCHITECTURE.md
++++ b/.planning/ARCHITECTURE.md
+@@ -50,13 +50,13 @@ Use Go structs for the normalized representation and typed operations for genera
+ 
+ Use `os/exec` with cancellation and a timeout. Phase 0 must verify the exact command-line options and ordering against the chosen Blender build, including background operation, startup isolation, disabling auto-execution of embedded scripts, and nonzero exit on Python failure. Disabling auto-execution must not prevent the explicitly supplied trusted entry script from running.
+ 
+-Run each job in a unique private directory with an unmodified pack, explicit environment/configuration, bounded logs, and a completion manifest. Do not reuse mutable global Blender state. Refuse a nonempty destination unless an explicit overwrite mode is requested; restrict any replacement to tool-owned artifacts. Never delete an arbitrary destination tree. Failed runs retain useful diagnostics and are never marked complete. Cancellation terminates the child process tree using tested platform behavior.
++Run each job in a unique private directory with an unmodified pack, explicit environment/configuration, bounded logs, and a completion manifest. Do not reuse mutable global Blender state. Treat --out as a parent and allocate a unique private job directory for compile/preview/render, nesting selected shots under their validated IDs. Existing artifacts are never replaced. Never delete an arbitrary destination tree. Failed runs retain useful diagnostics and are never marked complete. Cancellation terminates the child process tree using tested platform behavior.
+ 
+ This is execution hygiene, not a hostile-code sandbox. V1 only loads its own trusted pack and generated code. A future custom asset/plugin feature needs a separate trust design.
+ 
+ ## Proposed CLI surface
+ 
+-The following surface was the baseline design for Phases 0–6; consult current CLI help and phase evidence for implemented behavior. Project/shot extensions below remain planned:
++The following surface was the baseline design for Phases 0–6; consult current CLI help and phase evidence for implemented behavior. Project/shot extensions below are implemented:
+ 
+ ```text
+ blendctl doctor --blender /path/to/blender
+@@ -82,7 +82,7 @@ Diagnostics include stable code, stage, JSON pointer, message, and remediation h
+ 
+ Reference render aesthetic approval is separate from structural correctness. Preserve a contact sheet and require a named visual review result. Consult the [Blender command-line manual](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html) and version-matched Python API during Phase 0; the linked manual was not retrievable during preparation of this kit.
+ 
+-## Approved extension: module resolver (Phase 7, not implemented)
++## Approved extension: module resolver (Phase 7, implemented)
+ 
+ The current implementation compiles a validated `spec.Declaration`; add a file-aware project resolver before that boundary, not another Blender backend. Keep raw single-file entry points compatible. Proposed flow:
+ 
+@@ -92,14 +92,14 @@ The manifest has its own version and explicit entry/module dependencies. The exi
+ 
+ The phase CONTEXT defines logical namespaces and explicit import aliases. Qualify IDs deterministically and rewrite references through typed fields, not recursive string replacement. Reject ambiguity and cycles; no last-writer-wins merging, implicit overrides, templating, expressions, remote imports or wildcard scans. Import order may not determine scene meaning. Keep intentionally ordered lists (for example keyframes) ordered; canonicalize only unordered module/entity collections.
+ 
+-Resolve paths relative to the declaring file under the manifest directory. Normalize paths, resolve symlinks and reject escape from that root. Read bounded input snapshots once per job so validation and compilation use the same bytes. Bound modules, depth and total bytes; scene limits apply after assembly. JSON imports are declarations, not permission to load arbitrary Blender assets or execute files.
++Resolve paths relative to the declaring file under the manifest directory. Normalize paths, resolve symlinks and reject escape from that root. Read bounded module input snapshots once per job so validation, compilation and provenance use the same bytes. Snapshot hashes are per-file; they do not promise an atomic filesystem-wide transaction. Bound modules, depth and total bytes; scene limits apply after assembly. JSON imports are declarations, not permission to load arbitrary Blender assets or execute files.
+ 
+ Carry source file and original JSON pointer for each declaration field/entity through reference rewriting and validator errors. Source filenames are project-relative. Existing diagnostic fields stay compatible; source context is additive. Source maps and provenance live in separate artifacts so absolute checkout paths never alter generated script/data. Existing duplicate-ID and reference validation still applies after assembly.
+ 
+-## Approved extension: independent shots (Phase 8, not implemented)
++## Approved extension: independent shots (Phase 8, implemented)
+ 
+-A project may declare multiple shot IDs, each with a scene entry and explicit module dependencies. A selected build resolves that shot's transitive dependency closure into one declaration and uses the current fresh-process rendering model. The loader validates the outer manifest for every command, but only selected-shot contents for a selected-shot build. An explicit project-wide validation traverses every shot.
++A project may declare multiple shot IDs, each with a scene entry and explicit module dependencies. A selected build resolves that shot's transitive dependency closure into one declaration and uses the current fresh-process rendering model. The loader validates the outer manifest for every command, but only selected-shot contents for a selected-shot build. An explicit project-wide validation traverses every shot and checks every listed dependency graph, including unreachable modules. Non-shot projects also check the complete listed graph.
+ 
+-Outputs and manifests are isolated per shot. Record content hashes for the resolved input snapshot, dependency graph and tool/resource versions; do not implement cache reuse until invalidation semantics have been designed and tested. A shared module is immutable input during a run. Changing it requires rebuilding dependent shots but does not justify silently rerendering every shot.
++Outputs and manifests are isolated per shot. Record content hashes for the resolved input snapshot, dependency graph and tool/resource versions; do not implement cache reuse until invalidation semantics have been designed and tested. Loaded module bytes are immutable inputs during a run. Changing it requires rebuilding dependent shots but does not justify silently rerendering every shot.
+ 
+ No multi-scene Blender runtime, NLE timeline assembly or distributed scheduler is implied. Parameterized component instantiation will require a later separate contract for types, defaults, bounds and reference binding.
+diff --git a/.planning/BACKLOG.md b/.planning/BACKLOG.md
+index 5c80ef6..69e4c12 100644
+--- a/.planning/BACKLOG.md
++++ b/.planning/BACKLOG.md
+@@ -13,4 +13,4 @@
+ - Parameterized reusable components: typed inputs/defaults/bounds and deterministic instance expansion after Phase 7/8; no arbitrary expressions or programming language.
+ - Content-addressed per-shot build cache with tested invalidation; Phase 8 records dependencies but does not reuse cached renders.
+ 
+-Explicit local file composition and independent shot selection have moved into roadmap Phases 7 and 8. They are no longer deferred ideas; implementation and acceptance evidence are pending.
++Explicit local file composition and independent shot selection shipped in Phases 7–8. Parameterized modules and build caching remain deferred.
+diff --git a/.planning/ROADMAP.md b/.planning/ROADMAP.md
+index bb35b35..41ba4db 100644
+--- a/.planning/ROADMAP.md
++++ b/.planning/ROADMAP.md
+@@ -1,8 +1,8 @@
+ # Implementation roadmap
+ 
+-Status: Phases 0–6 executed; Linux amd64 `0.1.0-rc1` recorded in phase evidence. Phase 5 model-based authoring evaluation remains blocked; automated fixture results are not model repair-loop evidence. Additional platform support and public publication are not claimed. Phase 7 is the next implementation phase; Phase 8 follows it.
++Status: Phases 0–6 executed; Linux amd64 `0.1.0-rc1` recorded in phase evidence. Phase 5 model-based authoring evaluation remains blocked; automated fixture results are not model repair-loop evidence. Additional platform support and public publication are not claimed. Phases 7–8 are implemented. Open claims: Phase 5 model authoring gate, a stable release Blender baseline, non-Linux support, and public publication.
+ 
+-Reader: an implementation agent continuing from the existing RC. Start with Phase 7's PLAN and CONTEXT; preserve the working single-file compiler and its verification history. The Phase 0–6 descriptions below remain the original baseline, not instructions to restart completed work. Phases are dependency gates, not calendar promises.
++Reader: an implementation agent continuing from the existing RC. Start with STATE and the latest repair verification; preserve the working single-file compiler and its verification history. The Phase 0–6 descriptions below remain the original baseline, not instructions to restart completed work. Phases are dependency gates, not calendar promises.
+ 
+ Verification companion: [test and agent evaluation playbook](../docs/TEST-PLAYBOOK.md). Use its baseline cases now, module cases for Phase 7, and shot cases for Phase 8. Scenario definitions are not pass evidence.
+ 
+@@ -124,4 +124,4 @@ Tasks:
+ 
+ ## Sequencing discipline
+ 
+-Executed baseline: 0 → 1 → 2 → 3 → 4 → 5 → 6, subject to recorded verification caveats. New implementation: 7 → 8. Preserve the existing RC and blocked model-evaluation claim while extending composition. Phase 7 adds a source-resolution layer over the working compiler; Phase 8 adds independent shot targets. Parameterized components and content-addressed build caching are deferred. Go, local/offline operation and no RAG remain fixed. Do not introduce MCP, a GUI, a provider abstraction, arbitrary code or retrieval infrastructure in these phases.
++Executed baseline: 0 → 1 → 2 → 3 → 4 → 5 → 6, subject to recorded verification caveats. Composition extension executed: 7 → 8. Preserve the existing RC and blocked model-evaluation claim during maintenance. Phase 7 adds a source-resolution layer over the working compiler; Phase 8 adds independent shot targets. Parameterized components and content-addressed build caching are deferred. Go, local/offline operation and no RAG remain fixed. Do not introduce MCP, a GUI, a provider abstraction, arbitrary code or retrieval infrastructure in these phases.
+diff --git a/.planning/STATE.md b/.planning/STATE.md
+index 12ef6d5..91be3cc 100644
+--- a/.planning/STATE.md
++++ b/.planning/STATE.md
+@@ -1,13 +1,13 @@
+ # Project state
+ 
+-Updated: 2026-11-04
+-Status: Roadmap phases 0–8 complete on Linux amd64 under recorded verification. RC `0.1.0-rc1` baseline retained; modularity (Phase 7) and independent shots (Phase 8) implemented with evidence.
+-Active phase: none (roadmap gates 0–8 met).
++Updated: 2026-11-05
++Status: Roadmap phases 0–8 CLI/composition work executed on Linux amd64. Phase 5 proposed model repair-loop gate remains unmet/blocked; fixture smoke and visual review are not model-authoring evidence. RC `0.1.0-rc1` baseline retained; modularity (Phase 7) and independent shots (Phase 8) implemented with evidence.
++Active phase: none. Gauntlet round 1 implementation repairs verified; independent next verdict pending refreshed critics. See `.planning/fixes/gauntlet-round-1/VERIFICATION.md`.
+ Next action: owner decisions on public publish, LLM authoring eval tooling, and any non-Linux platform claims. Track deferred ideas in BACKLOG (parameterized modules, build cache, video assembly).
+ 
+ ## Completed
+ 
+-Roadmap phases 0–8 (see phase VERIFICATION files). README product refresh on `main` (`6066c99`). Phase 7–8 evidence: `.planning/phases/07-modular-projects/VERIFICATION.md`, `.planning/phases/08-independent-shots/VERIFICATION.md`. Progress: `M007.002`, `M008.001`.
++Roadmap phases 0–8 implementation (see phase VERIFICATION files; Phase 5 proposed authoring gate is unmet/blocked). README product refresh on `main` (`6066c99`). Phase 7–8 evidence: `.planning/phases/07-modular-projects/VERIFICATION.md`, `.planning/phases/08-independent-shots/VERIFICATION.md`. Progress: `M007.002`, `M008.001`.
+ 
+ ## Post-RC follow-ups
+ 
+@@ -24,3 +24,9 @@ Roadmap phases 0–8 (see phase VERIFICATION files). README product refresh on `
+ ## Modularity decision — 2026-11-04
+ 
+ Owner approved Phases 7–8 after the initial RC. Implemented: explicit local module graph, namespaces, source diagnostics, inspect/CLI, paired fixtures; then shot selection, closure loading, dependency provenance, three-shot example, change isolation. Scene schema `1.0.0` and compiler backend unchanged. No RAG. Parameterized components and build caching remain deferred.
++
++## Gauntlet repair — 2026-11-05
++
++All twelve high-priority leftovers repaired with regression coverage. Commands: `gofmt -l .` (empty), `go vet ./...` (exit 0), `go test ./... -count=1 -timeout 10m` (103 tests/subtests passed including real Blender), `go test -race ./internal/project ./cmd/blendctl -count=1` (42 passed), `git diff --check` (exit 0). Blender 5.3.0 Beta build 7e7c173d45c8, Linux amd64. No additional visual/model evaluation claimed.
++
++New compose attempt rejected all five critic files as stale relative to the updated review; round-one outbox retained. Repair verification lists remaining medium/low risks. Dot Progress: `F000001.gauntlet-round-one-hardening.md`.
+diff --git a/.planning/phases/07-modular-projects/VERIFICATION.md b/.planning/phases/07-modular-projects/VERIFICATION.md
+index c5fbabc..529a980 100644
+--- a/.planning/phases/07-modular-projects/VERIFICATION.md
++++ b/.planning/phases/07-modular-projects/VERIFICATION.md
+@@ -36,3 +36,8 @@ go run ./cmd/blendctl guide | head
+ - LLM authoring evaluation remains blocked / not claimed.
+ - macOS/Windows not claimed.
+ - Pixel identity across GPUs/OS/Blender builds is not promised; equivalence is compile bytes + successful preview artifacts under pinned Linux amd64 Blender 5.3.
++
++
++## 2026-11-05 Gauntlet repair addendum
++
++MOD-02 graph limits/orphans now have exact-code negative tests. MOD-06 equivalence now compares reopened Blender object/camera/material/scene state and decoded nonempty PNG pixels, rather than artifact existence alone. See [repair verification](../../fixes/gauntlet-round-1/VERIFICATION.md) for exact commands, fresh results, and remaining medium/low gaps. Full suite: `go test ./... -count=1 -timeout 10m` passed 103 tests/subtests with real Blender; project/CLI race checks passed 42. Historical evidence above describes the earlier implementation.
+diff --git a/.planning/phases/08-independent-shots/VERIFICATION.md b/.planning/phases/08-independent-shots/VERIFICATION.md
+index 3197033..a5f2439 100644
+--- a/.planning/phases/08-independent-shots/VERIFICATION.md
++++ b/.planning/phases/08-independent-shots/VERIFICATION.md
+@@ -30,3 +30,8 @@ go run ./cmd/blendctl compile examples/projects/three_shots/project.json --shot
+ 
+ - No incremental cache, scheduler, or video assembly (deferred).
+ - Model evaluation and non-Linux platforms remain unclaimed.
++
++
++## 2026-11-05 Gauntlet repair addendum
++
++SHOT-01 all-shots behavior now has a real CLI-path regression attributing the broken bad shot. SHOT-02 compile outputs use unique shot-nested jobs and hashes come from load-time bytes, including the manifest. CLI signal/process-group cancellation and exact render frame sets are covered. See [repair verification](../../fixes/gauntlet-round-1/VERIFICATION.md) for exact commands, fresh results, and remaining medium/low gaps. Full suite: `go test ./... -count=1 -timeout 10m` passed 103 tests/subtests with real Blender; project/CLI race checks passed 42. Historical evidence above describes the earlier implementation.
+diff --git a/README.md b/README.md
+index 9acb479..f19f3c7 100644
+--- a/README.md
++++ b/README.md
+@@ -6,6 +6,10 @@ You (or an agent) write a small versioned **JSON** scene. **`blendctl`** (Go) va
+ 
+ **Status:** Linux amd64 release candidate `0.1.0-rc1` (roadmap phases 0–8). Blender **5.3** family required. macOS/Windows not verified yet. Multi-file projects and independent shots are supported on top of single-file scenes.
+ 
++## Why a declarative interface
++
++MoBlend separates an agent's scene decisions from the Blender operations that implement them. The hypothesis is that explicit, validated declarations can reduce hidden-state and sequencing errors while making revisions easier to inspect. [Declarative interfaces for LLMs and the design of MoBlend](docs/DECLARATIVE-INTERFACES-FOR-LLMS.md) develops the argument, its limits and how to evaluate it.
++
+ ## Quick start
+ 
+ ```bash
+@@ -94,3 +98,5 @@ Layout: `cmd/blendctl`, `internal/{spec,validate,compile,project,runner,resource
+ ## License notes
+ 
+ Bundled DejaVu Sans: see `internal/resources/fonts/DejaVuSans.LICENSE`. Public release publication still requires owner authorization.
++
++Output safety: `--out` is a parent directory. Compile, preview and render create a fresh `moblend-job-*` directory, nested under the selected shot ID for projects with shots. Compile prints its actual paths. Only a `manifest.json` marked `complete` proves render success; partial PNGs and `.blend` files can remain after a failure. Job artifacts remain until manually removed.
+diff --git a/agent/GUIDE.md b/agent/GUIDE.md
+index c7ff027..666dae3 100644
+--- a/agent/GUIDE.md
++++ b/agent/GUIDE.md
+@@ -52,13 +52,13 @@ Use when separate agents own different parts of a production. Detection is by `k
+ - **Limits**: ≤32 modules, import depth ≤8, ≤256 KiB/file, ≤1 MiB project; resolved scene limits still apply.
+ - **Ownership**: one agent edits one module file; coordinate only on shared entry/camera and import contracts. Do not invent directory scans or implicit overrides.
+ - **Inspect** lists modules/imports without resolving the whole graph into a scene.
+-- **Compile** emits `source_map.json` and `dependencies.json` beside script/data (not part of compile identity).
++- **Compile** writes to a fresh `moblend-job-*` directory under `--out` (nested under the selected shot ID) and prints the artifact paths. It emits `source_map.json` and `dependencies.json` beside script/data (not part of compile identity).
+ 
+ Examples: `examples/projects/title_modular/`, `examples/projects/three_shots/`.
+ 
+ ## Shots (independent targets)
+ 
+-- Multi-shot projects require `--shot <id>` (or sole-shot default). `--all-shots` validates every shot closure.
++- Multi-shot projects require `--shot <id>` (or sole-shot default). `--all-shots` validates every shot closure and the entire listed dependency graph.
+ - Selected shot loads **only** its dependency closure; a broken unselected shot does not block the selected one.
+ - Preview/render with `--out DIR --shot ID` nests under `DIR/<shot>/` for isolation. Concurrent jobs stay in separate job directories.
+ 
+@@ -100,3 +100,11 @@ Machine diagnostics go to stdout with `--json`. Project diagnostics include `sou
+ 2. `preview --frame N` and inspect PNG + `scene.blend`
+ 3. Adjust text/colours/layout/params; re-validate
+ 4. `render` for full frame range; check `manifest.json` status `complete`
++
++## Output and snapshot safety
++
++Shot IDs must match `^[A-Za-z][A-Za-z0-9_]*$`. Compile, preview and render allocate unique jobs under the output parent, including when the sole shot is selected by default. An escaping shot-directory symlink is rejected.
++
++Only `manifest.json` with status `complete` establishes rendering success. PNGs or `.blend` alone may be partial artifacts from a failed job; render success requires the exact inclusive expected frame set. Failures retain `manifest.failed.json`. Job directories are retained for diagnosis; remove unwanted jobs manually after inspection.
++
++Dependency hashes describe bytes read during load, including the manifest, and never re-read project files after rendering. Coordinate edits before starting jobs: this is a per-file snapshot, not an atomic snapshot across concurrent filesystem edits. The loader follows the containment-checked real path; adversarial directory replacement races remain outside the v1 execution-hygiene guarantee.
+diff --git a/cmd/blendctl/main.go b/cmd/blendctl/main.go
+index 922f33d..4176db4 100644
+--- a/cmd/blendctl/main.go
++++ b/cmd/blendctl/main.go
+@@ -6,8 +6,10 @@ import (
+ 	"encoding/json"
+ 	"fmt"
+ 	"os"
++	"os/signal"
+ 	"path/filepath"
+ 	"runtime/debug"
++	"syscall"
+ 
+ 	"github.com/ndx-au/MoBlend/internal/compile"
+ 	"github.com/ndx-au/MoBlend/internal/diag"
+@@ -113,7 +115,7 @@ Usage:
+   blendctl schema [scene|project|module]
+   blendctl assets list [--json]
+   blendctl assets describe <asset-id> [--json]
+-  blendctl validate <scene-or-project.json> [--json] [--shot ID]
++  blendctl validate <scene-or-project.json> [--json] [--shot ID | --all-shots]
+   blendctl compile <scene-or-project.json> --out DIR [--shot ID]
+   blendctl inspect <project.json> [--json]
+   blendctl doctor [--json] [--blender PATH]
+@@ -157,7 +159,9 @@ func cmdSmoke() error {
+ 			return fmt.Errorf("create --out parent: %w", err)
+ 		}
+ 	}
+-	res, err := runner.RunSmoke(context.Background(), runner.SmokeOptions{
++	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
++	defer stop()
++	res, err := runner.RunSmoke(ctx, runner.SmokeOptions{
+ 		Parent: outParent,
+ 	})
+ 	enc := json.NewEncoder(os.Stdout)
+@@ -213,7 +217,7 @@ func cmdAssets(args []string) error {
+ func cmdValidate(args []string) error {
+ 	path := firstNonFlag(args)
+ 	if path == "" {
+-		fmt.Fprintln(os.Stderr, "usage: blendctl validate <scene-or-project.json> [--json] [--shot ID]")
++		fmt.Fprintln(os.Stderr, "usage: blendctl validate <scene-or-project.json> [--json] [--shot ID | --all-shots]")
+ 		return fmt.Errorf("missing path")
+ 	}
+ 	wantJSON := hasFlag(args, "--json")
+@@ -250,22 +254,20 @@ func cmdValidate(args []string) error {
+ }
+ 
+ func cmdValidateAllShots(path string, wantJSON bool) error {
+-	rep, err := project.Inspect(path)
++	shots, err := project.ListShots(path)
+ 	if err != nil {
+ 		return err
+ 	}
+-	if len(rep.Shots) == 0 {
++	if len(shots) == 0 {
+ 		_, err := project.LoadSceneOrProject(path, "")
+ 		return err
+ 	}
+ 	var all diag.ErrorList
+-	for _, s := range rep.Shots {
+-		if _, err := project.LoadSceneOrProject(path, s.ID); err != nil {
++	for _, s := range shots {
++		if _, err := project.LoadAndResolveShot(path, s.ID); err != nil {
+ 			if el, ok := err.(diag.ErrorList); ok {
+ 				for i := range el {
+-					if el[i].Hint == "" {
+-						el[i].Hint = "shot " + s.ID
+-					}
++					el[i].Hint = "shot " + s.ID + ": " + el[i].Hint
+ 				}
+ 				all = append(all, el...)
+ 			} else {
+@@ -273,6 +275,16 @@ func cmdValidateAllShots(path string, wantJSON bool) error {
+ 			}
+ 		}
+ 	}
++	// Once every selected closure passes, check orphan listed graph inputs too.
++	if len(all) == 0 {
++		if _, err := project.LoadAndResolveAllListed(path, shots[0].ID); err != nil {
++			if el, ok := err.(diag.ErrorList); ok {
++				all = append(all, el...)
++			} else {
++				all = append(all, diag.Diagnostic{Code: "PROJ_VALIDATE", Stage: "semantic", Message: err.Error()})
++			}
++		}
++	}
+ 	if len(all) > 0 {
+ 		if wantJSON {
+ 			_ = encodeJSON(map[string]any{"ok": false, "diagnostics": all})
+@@ -284,7 +296,7 @@ func cmdValidateAllShots(path string, wantJSON bool) error {
+ 		return all
+ 	}
+ 	if wantJSON {
+-		return encodeJSON(map[string]any{"ok": true, "shots": len(rep.Shots)})
++		return encodeJSON(map[string]any{"ok": true, "shots": len(shots)})
+ 	}
+ 	fmt.Println("OK")
+ 	return nil
+@@ -304,12 +316,25 @@ func cmdCompile(args []string) error {
+ 	if err != nil {
+ 		return err
+ 	}
++	outDir, err = outputParent(outDir, lr.Shot)
++	if err != nil {
++		return err
++	}
++	outDir, err = runner.JobDir(outDir)
++	if err != nil {
++		return err
++	}
+ 	if err := compile.WriteToDir(outDir, art); err != nil {
+ 		return err
+ 	}
+ 	if lr.SourceMap != nil {
+-		data, _ := json.MarshalIndent(lr.SourceMap, "", "  ")
+-		_ = os.WriteFile(filepath.Join(outDir, "source_map.json"), append(data, '\n'), 0o644)
++		data, err := json.MarshalIndent(lr.SourceMap, "", "  ")
++		if err != nil {
++			return err
++		}
++		if err := os.WriteFile(filepath.Join(outDir, "source_map.json"), append(data, '\n'), 0o644); err != nil {
++			return err
++		}
+ 	}
+ 	if lr.Resolved != nil {
+ 		if _, err := project.WriteDependencyManifest(outDir, *lr.Resolved); err != nil {
+@@ -372,18 +397,9 @@ func cmdApply(args []string, mode, usage string) error {
+ 	if err != nil {
+ 		return err
+ 	}
+-	outParent := flagValue(args, "--out")
+-	if outParent != "" {
+-		if err := os.MkdirAll(outParent, 0o755); err != nil {
+-			return err
+-		}
+-	}
+-	// Per-shot isolation: nest under shot id when selected.
+-	if shot := flagValue(args, "--shot"); shot != "" && outParent != "" {
+-		outParent = filepath.Join(outParent, shot)
+-		if err := os.MkdirAll(outParent, 0o755); err != nil {
+-			return err
+-		}
++	outParent, err := outputParent(flagValue(args, "--out"), lr.Shot)
++	if err != nil {
++		return err
+ 	}
+ 	frame := 0
+ 	if v := flagValue(args, "--frame"); v != "" {
+@@ -391,16 +407,16 @@ func cmdApply(args []string, mode, usage string) error {
+ 			return fmt.Errorf("bad --frame: %w", err)
+ 		}
+ 	}
+-	res, err := runner.RunApply(context.Background(), runner.ApplyOptions{
++	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
++	defer stop()
++	res, err := runner.RunApply(ctx, runner.ApplyOptions{
+ 		Parent:      outParent,
++		Resolved:    lr.Resolved,
+ 		Artifacts:   art,
+ 		Decl:        lr.Decl,
+ 		Mode:        mode,
+ 		RenderFrame: frame,
+ 	})
+-	if err == nil && lr.Resolved != nil {
+-		_, _ = project.WriteDependencyManifest(filepath.Join(res.JobDir, "out"), *lr.Resolved)
+-	}
+ 	if encErr := encodeJSON(res); encErr != nil && err == nil {
+ 		return encErr
+ 	}
+@@ -439,3 +455,40 @@ func encodeJSON(v any) error {
+ 	enc.SetIndent("", "  ")
+ 	return enc.Encode(v)
+ }
++
++// outputParent only accepts a validated, single-component shot directory.
++func outputParent(parent, shot string) (string, error) {
++	if shot != "" && !project.ValidShotID(shot) {
++		return "", fmt.Errorf("invalid shot id %q", shot)
++	}
++	if parent == "" {
++		return "", nil
++	}
++	root, err := filepath.Abs(parent)
++	if err != nil {
++		return "", err
++	}
++	if err := os.MkdirAll(root, 0o755); err != nil {
++		return "", err
++	}
++	root, err = filepath.EvalSymlinks(root)
++	if err != nil {
++		return "", err
++	}
++	dest := root
++	if shot != "" {
++		dest = filepath.Join(root, shot)
++	}
++	if err := os.MkdirAll(dest, 0o755); err != nil {
++		return "", err
++	}
++	real, err := filepath.EvalSymlinks(dest)
++	if err != nil {
++		return "", err
++	}
++	relative, err := filepath.Rel(root, real)
++	if err != nil || relative == ".." || (len(relative) > 3 && relative[:3] == "../") {
++		return "", fmt.Errorf("shot output escapes --out root")
++	}
++	return real, nil
++}
+diff --git a/docs/TEST-PLAYBOOK.md b/docs/TEST-PLAYBOOK.md
+index 05cc2a3..939fb6d 100644
+--- a/docs/TEST-PLAYBOOK.md
++++ b/docs/TEST-PLAYBOOK.md
+@@ -1,6 +1,6 @@
+ # MoBlend test and agent evaluation playbook
+ 
+-Status: executable test battery. Scenarios are oracles, not automatic results. Written 2026-11-04 against the Linux RC; Module (M) and Shot (S) cases are active after Phases 7–8. Latest recorded run: `docs/TEST-PLAYBOOK-RUN-2026-11-04.md`.
++Status: executable test battery. Scenarios are oracles, not automatic results. Written 2026-11-04 against the Linux RC; Module (M) and Shot (S) cases are mandatory on the Linux amd64 pin. Latest recorded run: `docs/TEST-PLAYBOOK-RUN-2026-11-04.md`.
+ 
+ Audience: agents and maintainers finding, reproducing and fixing transpiler failures. After reading, select a supported suite, run its cases, preserve evidence, minimize failures and add meaningful regression coverage before fixing code.
+ 
+@@ -8,7 +8,7 @@ Audience: agents and maintainers finding, reproducing and fixing transpiler fail
+ 
+ Measure five separate outcomes: declaration correctness, deterministic compilation, correct Blender state, usable rendered output and agent brief adherence. A PNG existing is not evidence of the other four. Existing prepared JSON fixtures are compiler/render tests, not natural-language authoring evaluations.
+ 
+-Current baseline: scene schema 1.0.0, pack 0.1.0, Blender 5.3 family, Linux amd64. Record exact versions and hashes for every run. Module tests activate when Phase 7 is implemented; shot tests activate in Phase 8. Unimplemented planned features are BLOCKED, never passed or counted as regressions against the RC. Runtime remains local and requires no model; model access is only an optional evaluation dependency.
++Current baseline: scene schema 1.0.0, pack 0.1.0, Blender 5.3 family, Linux amd64. Record exact versions and hashes for every run. Module and shot tests are active. Record BLOCKED for unavailable model/non-Linux evidence; never count skips as passes. Runtime remains local and requires no model; model access is only an optional evaluation dependency.
+ 
+ ## Run levels and budgets
+ 
+@@ -157,7 +157,7 @@ Unsupported prompt set (scored separately):
+ | U03 | “Render 10,000 frames with 10,000 objects.” | Explain existing bounded limits; no silent truncation or large render launch |
+ | U04 | “Output an MP4 with synchronized audio.” | Explain unsupported video/audio pipeline; PNG alternative may be offered explicitly, never claimed as the requested deliverable |
+ 
+-When Phase 7 is enabled, add prompt M-P01: “Split this valid scene into two owned modules without changing the image. Give me the dependency listing and preview.” Score M01/M04/M05 and scope of edits. When Phase 8 is enabled, add S-P01: “Change only shot two's title and render only shot two.” Score S01/S03/S04. They do not enter the P01–P12 denominator.
++Include prompt M-P01: “Split this valid scene into two owned modules without changing the image. Give me the dependency listing and preview.” Score M01/M04/M05 and scope of edits. Include S-P01: “Change only shot two's title and render only shot two.” Score S01/S03/S04. They do not enter the P01–P12 denominator.
+ 
+ ### Attempt protocol and scoring
+ 
+@@ -216,4 +216,9 @@ An execution-agent instruction for this loop:
+ 
+ ## Adoption order
+ 
+-First extend the current suite with A/B/C gaps found during the active phase; reuse its 12 fixture renders as baseline regression coverage. Implement M cases alongside Phase 7 and S cases alongside Phase 8. Run P01–P12 with an actual model when available to resolve the outstanding authoring-evaluation evidence gap. Add every confirmed minimized bug to the permanent regression corpus. This playbook adds verification guidance, not a new runtime feature or a completed milestone.
++First extend the current suite with A/B/C gaps found during the active phase; reuse its 12 fixture renders as baseline regression coverage. Run the mandatory M and S cases for composition changes. Run P01–P12 with an actual model when available to resolve the outstanding authoring-evaluation evidence gap. Add every confirmed minimized bug to the permanent regression corpus. This playbook adds verification guidance, not a new runtime feature or a completed milestone.
++
++## Gauntlet round 1 clarifications
++
++- S02: invoke `validate testdata/project/shots/broken_unselected/project.json --all-shots --json`; require a `PROJ_FILE_MISSING` diagnostic attributed to shot `bad`. Selected `good` must succeed independently.
++- Prepared supported JSON previews are fixture smoke tests only. Unsupported JSON negatives check the schema/validator, not natural-language refusal behavior. P01–P12 and U01–U04 agent-authoring/refusal evidence remain blocked until actual model evaluation runs are recorded.
+diff --git a/internal/project/inspect.go b/internal/project/inspect.go
+index a931793..09118b8 100644
+--- a/internal/project/inspect.go
++++ b/internal/project/inspect.go
+@@ -1,9 +1,7 @@
+ package project
+ 
+ import (
+-	"encoding/json"
+ 	"fmt"
+-	"os"
+ 	"path/filepath"
+ 	"sort"
+ )
+@@ -49,6 +47,17 @@ func Inspect(manifestPath string) (InspectReport, error) {
+ 	if man.Kind != "project" {
+ 		return InspectReport{}, fmt.Errorf("not a project manifest")
+ 	}
++	if man.ProjectVersion != ProjectVersion {
++		return InspectReport{}, fmt.Errorf("unsupported project_version %q", man.ProjectVersion)
++	}
++	if err := validateShots(man, rel(root, abs)); err != nil {
++		return InspectReport{}, err
++	}
++	rootReal, err := filepath.EvalSymlinks(root)
++	if err != nil {
++		return InspectReport{}, err
++	}
++	root = rootReal
+ 	rep := InspectReport{
+ 		ProjectVersion: man.ProjectVersion,
+ 		Entry:          man.Entry,
+@@ -58,20 +67,27 @@ func Inspect(manifestPath string) (InspectReport, error) {
+ 	}
+ 	for _, m := range man.Modules {
+ 		im := InspectModule{ID: m.ID, Path: m.Path}
+-		absM, err := resolveContainedPath(root, root, m.Path)
+-		if err == nil {
+-			if raw, err := os.ReadFile(absM); err == nil {
+-				var mf ModuleFile
+-				if json.Unmarshal(raw, &mf) == nil {
+-					im.Kind = mf.Kind
+-					im.Namespace = mf.Namespace
+-					for _, imp := range mf.Imports {
+-						im.Imports = append(im.Imports, imp.Module)
+-					}
+-					sort.Strings(im.Imports)
+-				}
+-			}
++		absM, err := resolveContainedPath(root, rootReal, m.Path)
++		if err != nil {
++			return InspectReport{}, err
++		}
++		raw, err := readBounded(absM, MaxFileBytes)
++		if err != nil {
++			return InspectReport{}, withSource(err, m.Path)
++		}
++		var mf ModuleFile
++		if err := strictDecode(raw, &mf); err != nil {
++			return InspectReport{}, withSource(err, m.Path)
++		}
++		if mf.ModuleVersion != ModuleVersion {
++			return InspectReport{}, fmt.Errorf("%s: unsupported module_version %q", m.Path, mf.ModuleVersion)
++		}
++		im.Kind = mf.Kind
++		im.Namespace = mf.Namespace
++		for _, imp := range mf.Imports {
++			im.Imports = append(im.Imports, imp.Module)
+ 		}
++		sort.Strings(im.Imports)
+ 		rep.Modules = append(rep.Modules, im)
+ 	}
+ 	return rep, nil
+diff --git a/internal/project/load.go b/internal/project/load.go
+index 488c9bd..6c28d3a 100644
+--- a/internal/project/load.go
++++ b/internal/project/load.go
+@@ -1,11 +1,12 @@
+ package project
+ 
+ import (
++	"bytes"
+ 	"encoding/json"
+ 	"fmt"
++	"io"
+ 	"os"
+ 	"path/filepath"
+-	"strings"
+ 
+ 	"github.com/ndx-au/MoBlend/internal/diag"
+ 	"github.com/ndx-au/MoBlend/internal/spec"
+@@ -29,7 +30,7 @@ func DetectKind(data []byte) (InputKind, error) {
+ 	if err := json.Unmarshal(data, &peek); err != nil {
+ 		return KindScene, diag.ErrorList{{Code: "SPEC_JSON", Stage: "parse", Message: err.Error()}}
+ 	}
+-	if peek.Kind == "project" || peek.ProjectVersion != "" {
++	if peek.Kind == "project" {
+ 		return KindProject, nil
+ 	}
+ 	return KindScene, nil
+@@ -37,38 +38,21 @@ func DetectKind(data []byte) (InputKind, error) {
+ 
+ // LoadAndResolve loads a project manifest path and resolves to a Declaration.
+ func LoadAndResolve(manifestPath string) (Resolved, error) {
+-	abs, err := filepath.Abs(manifestPath)
+-	if err != nil {
+-		return Resolved{}, err
+-	}
+-	root := filepath.Dir(abs)
+-	data, err := readBounded(abs, MaxFileBytes)
+-	if err != nil {
+-		return Resolved{}, err
+-	}
+-	var man Manifest
+-	if err := strictDecode(data, &man); err != nil {
+-		return Resolved{}, withSource(err, filepath.Base(abs))
+-	}
+-	if man.Kind != "project" {
+-		return Resolved{}, diag.ErrorList{{
+-			Code: "PROJ_KIND", Stage: "schema", Pointer: "/kind", Source: rel(root, abs),
+-			Message: "expected kind \"project\"",
+-		}}
+-	}
+-	if man.ProjectVersion != ProjectVersion {
+-		return Resolved{}, diag.ErrorList{{
+-			Code: "PROJ_VERSION", Stage: "schema", Pointer: "/project_version", Source: rel(root, abs),
+-			Message: fmt.Sprintf("unsupported project_version %q", man.ProjectVersion),
+-			Hint:    fmt.Sprintf("use %q", ProjectVersion),
+-		}}
+-	}
+-	return resolveManifest(root, rel(root, abs), man, "")
++	return loadProject(manifestPath, "", true)
+ }
+ 
+ // LoadAndResolveShot resolves only the dependency closure of shotID (Phase 8).
+ // If shotID is empty and the project has no shots, behaves like LoadAndResolve.
+ func LoadAndResolveShot(manifestPath, shotID string) (Resolved, error) {
++	return loadProject(manifestPath, shotID, false)
++}
++
++// LoadAndResolveAllListed validates the complete listed graph while assembling one shot.
++func LoadAndResolveAllListed(manifestPath, shotID string) (Resolved, error) {
++	return loadProject(manifestPath, shotID, true)
++}
++
++func loadProject(manifestPath, shotID string, allListed bool) (Resolved, error) {
+ 	abs, err := filepath.Abs(manifestPath)
+ 	if err != nil {
+ 		return Resolved{}, err
+@@ -82,8 +66,14 @@ func LoadAndResolveShot(manifestPath, shotID string) (Resolved, error) {
+ 	if err := strictDecode(data, &man); err != nil {
+ 		return Resolved{}, withSource(err, rel(root, abs))
+ 	}
+-	if man.Kind != "project" || man.ProjectVersion != ProjectVersion {
+-		return LoadAndResolve(manifestPath)
++	if man.Kind != "project" {
++		return Resolved{}, diag.ErrorList{{Code: "PROJ_KIND", Stage: "schema", Source: rel(root, abs), Pointer: "/kind", Message: "expected kind project"}}
++	}
++	if man.ProjectVersion != ProjectVersion {
++		return Resolved{}, diag.ErrorList{{Code: "PROJ_VERSION", Stage: "schema", Source: rel(root, abs), Pointer: "/project_version", Message: "unsupported project_version", Hint: "use " + ProjectVersion}}
++	}
++	if err := validateShots(man, rel(root, abs)); err != nil {
++		return Resolved{}, err
+ 	}
+ 	if len(man.Shots) == 0 {
+ 		if shotID != "" {
+@@ -92,7 +82,7 @@ func LoadAndResolveShot(manifestPath, shotID string) (Resolved, error) {
+ 				Message: "project has no shots",
+ 			}}
+ 		}
+-		return resolveManifest(root, rel(root, abs), man, "")
++		return resolveManifest(root, rel(root, abs), data, man, "", true)
+ 	}
+ 	if shotID == "" {
+ 		if len(man.Shots) == 1 {
+@@ -126,24 +116,31 @@ func LoadAndResolveShot(manifestPath, shotID string) (Resolved, error) {
+ 		}}
+ 	}
+ 	man.Entry = entry
+-	return resolveManifest(root, rel(root, abs), man, shotID)
++	return resolveManifest(root, rel(root, abs), data, man, shotID, allListed)
+ }
+ 
+ func readBounded(path string, max int) ([]byte, error) {
+-	st, err := os.Stat(path)
++	f, err := os.Open(path)
+ 	if err != nil {
+ 		return nil, diag.ErrorList{{Code: "PROJ_IO", Stage: "parse", Message: err.Error()}}
+ 	}
+-	if st.Size() > int64(max) {
+-		return nil, diag.ErrorList{{
+-			Code: "LIM_FILE_BYTES", Stage: "parse", Message: fmt.Sprintf("file exceeds %d bytes", max),
+-		}}
++	defer f.Close()
++	data, err := io.ReadAll(io.LimitReader(f, int64(max)+1))
++	if err != nil {
++		return nil, err
+ 	}
+-	return os.ReadFile(path)
++	if len(data) > max {
++		return nil, diag.ErrorList{{Code: "LIM_FILE_BYTES", Stage: "parse", Message: fmt.Sprintf("file exceeds %d bytes", max)}}
++	}
++	return data, nil
+ }
+ 
+ func strictDecode(data []byte, v any) error {
+-	dec := json.NewDecoder(strings.NewReader(string(data)))
++	// Use the scene decoder's duplicate-key/trailing-document guard before typed decoding.
++	if err := spec.CheckJSON(data); err != nil {
++		return err
++	}
++	dec := json.NewDecoder(bytes.NewReader(data))
+ 	dec.DisallowUnknownFields()
+ 	if err := dec.Decode(v); err != nil {
+ 		return diag.ErrorList{{Code: "SPEC_SCHEMA", Stage: "schema", Message: err.Error()}}
+@@ -151,6 +148,36 @@ func strictDecode(data []byte, v any) error {
+ 	return nil
+ }
+ 
++// ValidShotID is also the output directory component contract.
++func ValidShotID(id string) bool { return localRe.MatchString(id) }
++
++func validateShots(man Manifest, source string) error {
++	if len(man.Shots) > 64 {
++		return diag.ErrorList{{Code: "LIM_SHOTS", Stage: "schema", Source: source, Message: "at most 64 shots"}}
++	}
++	seen := map[string]bool{}
++	for i, shot := range man.Shots {
++		p := fmt.Sprintf("/shots/%d", i)
++		if !ValidShotID(shot.ID) {
++			return diag.ErrorList{{Code: "SHOT_ID", Stage: "schema", Source: source, Pointer: p + "/id", Message: "shot id must match ^[A-Za-z][A-Za-z0-9_]*$"}}
++		}
++		if seen[shot.ID] {
++			return diag.ErrorList{{Code: "SHOT_DUP_ID", Stage: "schema", Source: source, Pointer: p + "/id", Message: "duplicate shot id"}}
++		}
++		seen[shot.ID] = true
++		found := false
++		for _, m := range man.Modules {
++			if m.ID == shot.Entry {
++				found = true
++			}
++		}
++		if !found {
++			return diag.ErrorList{{Code: "SHOT_ENTRY", Stage: "schema", Source: source, Pointer: p + "/entry", Message: "shot entry must name a listed module"}}
++		}
++	}
++	return nil
++}
++
+ func withSource(err error, source string) error {
+ 	elist, ok := err.(diag.ErrorList)
+ 	if !ok {
+@@ -184,3 +211,22 @@ func IsProjectPath(path string) (bool, error) {
+ 
+ // Ensure scene schema import stays referenced for MaxDeclarationBytes alignment.
+ var _ = spec.SchemaVersion
++
++// ListShots validates the outer manifest without reading shot contents.
++func ListShots(path string) ([]ManifestShot, error) {
++	data, err := readBounded(path, MaxFileBytes)
++	if err != nil {
++		return nil, err
++	}
++	var man Manifest
++	if err := strictDecode(data, &man); err != nil {
++		return nil, err
++	}
++	if man.Kind != "project" || man.ProjectVersion != ProjectVersion {
++		return nil, fmt.Errorf("expected supported project manifest")
++	}
++	if err := validateShots(man, filepath.Base(path)); err != nil {
++		return nil, err
++	}
++	return man.Shots, nil
++}
+diff --git a/internal/project/provenance.go b/internal/project/provenance.go
+index 1ff9ae1..83c976b 100644
+--- a/internal/project/provenance.go
++++ b/internal/project/provenance.go
+@@ -4,7 +4,6 @@ import (
+ 	"crypto/sha256"
+ 	"encoding/hex"
+ 	"encoding/json"
+-	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"sort"
+@@ -38,18 +37,8 @@ func BuildDependencyManifest(r Resolved) (DependencyManifest, error) {
+ 	if err != nil {
+ 		return DependencyManifest{}, err
+ 	}
+-	files := append([]string(nil), r.Files...)
+-	sort.Strings(files)
+-	digests := make([]FileDigest, 0, len(files))
+-	for _, rel := range files {
+-		abs := filepath.Join(r.RootDir, filepath.FromSlash(rel))
+-		raw, err := os.ReadFile(abs)
+-		if err != nil {
+-			return DependencyManifest{}, fmt.Errorf("hash %s: %w", rel, err)
+-		}
+-		sum := sha256.Sum256(raw)
+-		digests = append(digests, FileDigest{Path: rel, SHA256: hex.EncodeToString(sum[:])})
+-	}
++	digests := append([]FileDigest(nil), r.Digests...)
++	sort.Slice(digests, func(i, j int) bool { return digests[i].Path < digests[j].Path })
+ 	canon, err := json.Marshal(r.Decl)
+ 	if err != nil {
+ 		return DependencyManifest{}, err
+@@ -102,3 +91,8 @@ func ResolvedDataSHA(decl spec.Declaration) (string, error) {
+ 	sum := sha256.Sum256(canon)
+ 	return hex.EncodeToString(sum[:]), nil
+ }
++
++func digest(path string, raw []byte) FileDigest {
++	sum := sha256.Sum256(raw)
++	return FileDigest{Path: path, SHA256: hex.EncodeToString(sum[:])}
++}
+diff --git a/internal/project/resolve.go b/internal/project/resolve.go
+index c2131e9..0084311 100644
+--- a/internal/project/resolve.go
++++ b/internal/project/resolve.go
+@@ -29,7 +29,7 @@ type loadedModule struct {
+ 	Depth   int
+ }
+ 
+-func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved, error) {
++func resolveManifest(root, manRel string, manifestData []byte, man Manifest, shotID string, allListed bool) (Resolved, error) {
+ 	if len(man.Modules) == 0 {
+ 		return Resolved{}, diag.ErrorList{{
+ 			Code: "PROJ_MODULES_EMPTY", Stage: "schema", Pointer: "/modules", Source: manRel,
+@@ -77,13 +77,15 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
+ 
+ 	rootReal, err := filepath.EvalSymlinks(root)
+ 	if err != nil {
+-		rootReal = root
++		return Resolved{}, err
+ 	}
+ 
+-	var totalBytes int64
++	root = rootReal
++
++	totalBytes := int64(len(manifestData))
++	digests := []FileDigest{digest(manRel, manifestData)}
+ 	loaded := map[string]*loadedModule{}
+ 	var order []string
+-	var loadErrs diag.ErrorList
+ 
+ 	var loadOne func(id string, depth int) error
+ 	loadOne = func(id string, depth int) error {
+@@ -111,6 +113,7 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
+ 		if err != nil {
+ 			return withSource(err, rel(root, abs))
+ 		}
++		digests = append(digests, digest(rel(root, abs), data))
+ 		totalBytes += int64(len(data))
+ 		if totalBytes > int64(MaxProjectBytes) {
+ 			return diag.ErrorList{{
+@@ -151,20 +154,52 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
+ 		return nil
+ 	}
+ 
+-	// Load entry closure only (Phase 7 full project = entry closure; Phase 8 shot = entry closure).
++	// Load the entry closure first; whole-project mode additionally checks listed orphans.
+ 	if err := loadOne(man.Entry, 0); err != nil {
+ 		if el, ok := err.(diag.ErrorList); ok {
+ 			return Resolved{}, el
+ 		}
+ 		return Resolved{}, err
+ 	}
+-	_ = loadErrs
++	// Check unused listed files as graph inputs, without merging their entities.
++	closure := append([]string(nil), order...)
++	if allListed {
++		for _, m := range man.Modules {
++			if err := loadOne(m.ID, 0); err != nil {
++				return Resolved{}, err
++			}
++		}
++	}
+ 
+ 	// Cycle detection via DFS on import edges within loaded set.
+ 	if err := detectCycles(loaded); err != nil {
+ 		return Resolved{}, err
+ 	}
+ 
++	// Depth must be bounded along every path, even if a diamond loaded a
++	// dependency first through a shorter path. Cycles were rejected above.
++	depths := map[string]int{}
++	var graphDepth func(string) int
++	graphDepth = func(id string) int {
++		if d, ok := depths[id]; ok {
++			return d
++		}
++		d := 0
++		for _, im := range loaded[id].File.Imports {
++			if n := 1 + graphDepth(im.Module); n > d {
++				d = n
++			}
++		}
++		depths[id] = d
++		return d
++	}
++	for id := range loaded {
++		if graphDepth(id) > MaxImportDepth {
++			return Resolved{}, diag.ErrorList{{Code: "LIM_IMPORT_DEPTH", Stage: "semantic", Source: manRel, Message: "import depth exceeds limit"}}
++		}
++	}
++	// Only the selected entry closure participates in scene composition.
++	order = closure
+ 	entry := loaded[man.Entry]
+ 	if entry.File.Kind != "entry" {
+ 		return Resolved{}, diag.ErrorList{{
+@@ -328,10 +363,9 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
+ 		return Resolved{}, err
+ 	}
+ 
+-	files := make([]string, 0, len(order)+1)
+-	files = append(files, manRel)
+-	for _, id := range ids {
+-		files = append(files, loaded[id].RelPath)
++	files := make([]string, 0, len(digests))
++	for _, d := range digests {
++		files = append(files, d.Path)
+ 	}
+ 	sort.Strings(files)
+ 
+@@ -340,6 +374,7 @@ func resolveManifest(root, manRel string, man Manifest, shotID string) (Resolved
+ 		SourceMap: sm,
+ 		RootDir:   root,
+ 		Files:     files,
++		Digests:   digests,
+ 		Shot:      shotID,
+ 	}, nil
+ }
+@@ -455,7 +490,7 @@ func resolveContainedPath(root, rootReal, relPath string) (string, error) {
+ 			Message: fmt.Sprintf("path escapes project root: %q", relPath),
+ 		}}
+ 	}
+-	return abs, nil
++	return real, nil
+ }
+ 
+ func annotateSource(d diag.Diagnostic, sm SourceMap, decl spec.Declaration) diag.Diagnostic {
+diff --git a/internal/project/resolve_test.go b/internal/project/resolve_test.go
+index 06386b6..86280ff 100644
+--- a/internal/project/resolve_test.go
++++ b/internal/project/resolve_test.go
+@@ -109,6 +109,7 @@ func TestRejectMissing(t *testing.T) {
+ 	if err == nil {
+ 		t.Fatal("expected missing")
+ 	}
++	requireCode(t, err, "PROJ_FILE_MISSING")
+ }
+ 
+ func TestRejectEscape(t *testing.T) {
+@@ -120,7 +121,7 @@ func TestRejectEscape(t *testing.T) {
+ 	if !ok {
+ 		t.Fatalf("%T %v", err, err)
+ 	}
+-	if el[0].Code != "PROJ_PATH_ESCAPE" && el[0].Code != "PROJ_FILE_MISSING" {
++	if el[0].Code != "PROJ_PATH_ESCAPE" {
+ 		t.Fatalf("code %s", el[0].Code)
+ 	}
+ }
+@@ -221,20 +222,12 @@ func TestAggregateObjectLimit(t *testing.T) {
+ 	if !ok {
+ 		t.Fatalf("%v", err)
+ 	}
+-	found := false
+ 	for _, d := range el {
+-		if d.Code == "LIM_OBJECTS" || d.Code == "SEM_TOO_MANY_OBJECTS" || d.Code == "LIM_OBJECT_COUNT" {
+-			found = true
++		if d.Code == "LIM_OBJECTS" {
++			return
+ 		}
+-		// accept any limit-style object overflow code
+-		if len(d.Code) >= 3 && (d.Code[:3] == "LIM" || d.Message != "") &&
+-			(d.Pointer == "/objects" || contains(d.Message, "32") || contains(d.Message, "object")) {
+-			found = true
+-		}
+-	}
+-	if !found {
+-		t.Fatalf("expected object limit diagnostic, got %v", el)
+ 	}
++	t.Fatalf("expected LIM_OBJECTS, got %v", el)
+ }
+ 
+ func TestSourceAwareDiagnostic(t *testing.T) {
+@@ -477,14 +470,3 @@ func copyTree(t *testing.T, src, dst string) {
+ 		t.Fatal(err)
+ 	}
+ }
+-
+-func contains(s, sub string) bool {
+-	return len(sub) == 0 || (len(s) >= len(sub) && (s == sub || len(s) > 0 && (func() bool {
+-		for i := 0; i+len(sub) <= len(s); i++ {
+-			if s[i:i+len(sub)] == sub {
+-				return true
+-			}
+-		}
+-		return false
+-	})()))
+-}
+diff --git a/internal/project/types.go b/internal/project/types.go
+index e22c56b..727ba3f 100644
+--- a/internal/project/types.go
++++ b/internal/project/types.go
+@@ -74,6 +74,7 @@ type Resolved struct {
+ 	Decl      spec.Declaration
+ 	SourceMap SourceMap
+ 	RootDir   string
+-	Files     []string // project-relative paths loaded
+-	Shot      string   // selected shot id when resolving a multi-shot project
++	Files     []string     // project-relative paths loaded
++	Digests   []FileDigest // immutable hashes captured at load time
++	Shot      string       // selected shot id when resolving a multi-shot project
+ }
+diff --git a/internal/resources/agent/GUIDE.md b/internal/resources/agent/GUIDE.md
+index c7ff027..666dae3 100644
+--- a/internal/resources/agent/GUIDE.md
++++ b/internal/resources/agent/GUIDE.md
+@@ -52,13 +52,13 @@ Use when separate agents own different parts of a production. Detection is by `k
+ - **Limits**: ≤32 modules, import depth ≤8, ≤256 KiB/file, ≤1 MiB project; resolved scene limits still apply.
+ - **Ownership**: one agent edits one module file; coordinate only on shared entry/camera and import contracts. Do not invent directory scans or implicit overrides.
+ - **Inspect** lists modules/imports without resolving the whole graph into a scene.
+-- **Compile** emits `source_map.json` and `dependencies.json` beside script/data (not part of compile identity).
++- **Compile** writes to a fresh `moblend-job-*` directory under `--out` (nested under the selected shot ID) and prints the artifact paths. It emits `source_map.json` and `dependencies.json` beside script/data (not part of compile identity).
+ 
+ Examples: `examples/projects/title_modular/`, `examples/projects/three_shots/`.
+ 
+ ## Shots (independent targets)
+ 
+-- Multi-shot projects require `--shot <id>` (or sole-shot default). `--all-shots` validates every shot closure.
++- Multi-shot projects require `--shot <id>` (or sole-shot default). `--all-shots` validates every shot closure and the entire listed dependency graph.
+ - Selected shot loads **only** its dependency closure; a broken unselected shot does not block the selected one.
+ - Preview/render with `--out DIR --shot ID` nests under `DIR/<shot>/` for isolation. Concurrent jobs stay in separate job directories.
+ 
+@@ -100,3 +100,11 @@ Machine diagnostics go to stdout with `--json`. Project diagnostics include `sou
+ 2. `preview --frame N` and inspect PNG + `scene.blend`
+ 3. Adjust text/colours/layout/params; re-validate
+ 4. `render` for full frame range; check `manifest.json` status `complete`
++
++## Output and snapshot safety
++
++Shot IDs must match `^[A-Za-z][A-Za-z0-9_]*$`. Compile, preview and render allocate unique jobs under the output parent, including when the sole shot is selected by default. An escaping shot-directory symlink is rejected.
++
++Only `manifest.json` with status `complete` establishes rendering success. PNGs or `.blend` alone may be partial artifacts from a failed job; render success requires the exact inclusive expected frame set. Failures retain `manifest.failed.json`. Job directories are retained for diagnosis; remove unwanted jobs manually after inspection.
++
++Dependency hashes describe bytes read during load, including the manifest, and never re-read project files after rendering. Coordinate edits before starting jobs: this is a per-file snapshot, not an atomic snapshot across concurrent filesystem edits. The loader follows the containment-checked real path; adversarial directory replacement races remain outside the v1 execution-hygiene guarantee.
+diff --git a/internal/resources/schema/project_v1.json b/internal/resources/schema/project_v1.json
+index 3de25e9..7647ecf 100644
+--- a/internal/resources/schema/project_v1.json
++++ b/internal/resources/schema/project_v1.json
+@@ -31,7 +31,7 @@
+         "additionalProperties": false,
+         "required": ["id", "entry"],
+         "properties": {
+-          "id": { "type": "string", "minLength": 1 },
++          "id": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
+           "entry": { "type": "string", "minLength": 1 }
+         }
+       }
+diff --git a/internal/runner/apply.go b/internal/runner/apply.go
+index 23f89eb..eb2b597 100644
+--- a/internal/runner/apply.go
++++ b/internal/runner/apply.go
+@@ -8,6 +8,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/ndx-au/MoBlend/internal/compile"
++	"github.com/ndx-au/MoBlend/internal/project"
+ 	"github.com/ndx-au/MoBlend/internal/resources"
+ 	"github.com/ndx-au/MoBlend/internal/spec"
+ )
+@@ -21,6 +22,7 @@ type ApplyOptions struct {
+ 	Mode        string // preview (default) or render
+ 	RenderFrame int
+ 	Timeout     time.Duration
++	Resolved    *project.Resolved // optional load-time provenance written before success
+ }
+ 
+ // ApplyResult paths from a successful apply/render.
+@@ -34,7 +36,7 @@ type ApplyResult struct {
+ }
+ 
+ // RunApply extracts pack+font, writes compile artifacts, launches Blender.
+-func RunApply(ctx context.Context, opt ApplyOptions) (ApplyResult, error) {
++func RunApply(ctx context.Context, opt ApplyOptions) (result ApplyResult, runErr error) {
+ 	if opt.Timeout == 0 {
+ 		opt.Timeout = 5 * time.Minute
+ 	}
+@@ -51,6 +53,16 @@ func RunApply(ctx context.Context, opt ApplyOptions) (ApplyResult, error) {
+ 		return ApplyResult{}, err
+ 	}
+ 	outDir := filepath.Join(jobDir, "out")
++	result.JobDir = jobDir
++	defer func() {
++		if runErr != nil {
++			_ = os.MkdirAll(outDir, 0o755)
++			if _, err := os.Stat(filepath.Join(outDir, "manifest.failed.json")); os.IsNotExist(err) {
++				_ = WriteFailedMarker(outDir, "RUN_FAILED", runErr.Error())
++			}
++			result.JobDir = jobDir
++		}
++	}()
+ 	if err := os.MkdirAll(outDir, 0o755); err != nil {
+ 		return ApplyResult{}, err
+ 	}
+@@ -109,20 +121,31 @@ func RunApply(ctx context.Context, opt ApplyOptions) (ApplyResult, error) {
+ 			_ = WriteFailedMarker(outDir, "RUN_OUTPUT", rdErr.Error())
+ 			return out, fmt.Errorf("missing frames dir: %w", rdErr)
+ 		}
+-		for _, e := range entries {
+-			if !e.IsDir() {
+-				out.Frames = append(out.Frames, filepath.Join(framesDir, e.Name()))
+-			}
++		expected := opt.Decl.Scene.FrameEnd - opt.Decl.Scene.FrameStart + 1
++		if len(entries) != expected {
++			return out, fmt.Errorf("incomplete frame set: got %d want %d", len(entries), expected)
+ 		}
+-		if len(out.Frames) == 0 {
+-			_ = WriteFailedMarker(outDir, "RUN_OUTPUT", "no frames written")
+-			return out, fmt.Errorf("no frames written")
++		for frame := opt.Decl.Scene.FrameStart; frame <= opt.Decl.Scene.FrameEnd; frame++ {
++			path := filepath.Join(framesDir, fmt.Sprintf("frame_%04d.png", frame))
++			st, err := os.Stat(path)
++			if err != nil || !st.Mode().IsRegular() || st.Size() == 0 {
++				return out, fmt.Errorf("missing or invalid expected frame %d", frame)
++			}
++			out.Frames = append(out.Frames, path)
+ 		}
+ 	} else if _, statErr := os.Stat(out.PNG); statErr != nil {
+ 		_ = WriteFailedMarker(outDir, "RUN_OUTPUT", statErr.Error())
+ 		return out, fmt.Errorf("missing preview png: %w", statErr)
+ 	}
+ 
++	if st, err := os.Stat(out.Blend); err != nil || !st.Mode().IsRegular() || st.Size() == 0 {
++		return out, fmt.Errorf("missing or invalid scene.blend")
++	}
++	if opt.Resolved != nil {
++		if _, err := project.WriteDependencyManifest(outDir, *opt.Resolved); err != nil {
++			return out, err
++		}
++	}
+ 	outputs := map[string]any{
+ 		"blend": "scene.blend",
+ 		"mode":  mode,
+diff --git a/internal/runner/eval_integration_test.go b/internal/runner/eval_integration_test.go
+index 8f97801..9c9b69f 100644
+--- a/internal/runner/eval_integration_test.go
++++ b/internal/runner/eval_integration_test.go
+@@ -14,7 +14,8 @@ import (
+ 	"github.com/ndx-au/MoBlend/internal/validate"
+ )
+ 
+-func TestEvalSupportedBriefsPreview(t *testing.T) {
++// TestEvalPreparedFixturesPreview is a render smoke suite, not a model authoring evaluation.
++func TestEvalPreparedFixturesPreview(t *testing.T) {
+ 	blender := blenderAvailable(t)
+ 	dir := filepath.Join("..", "..", "testdata/eval/supported")
+ 	entries, err := os.ReadDir(dir)
+@@ -58,10 +59,11 @@ func TestEvalSupportedBriefsPreview(t *testing.T) {
+ 			pass++
+ 		})
+ 	}
+-	t.Logf("supported briefs previewed: %d/%d", pass, len(files))
++	t.Logf("prepared fixtures previewed: %d/%d", pass, len(files))
+ }
+ 
+-func TestEvalUnsupportedRejected(t *testing.T) {
++// TestEvalUnsupportedSchemaFixturesRejected checks JSON rejection, not natural-language refusals.
++func TestEvalUnsupportedSchemaFixturesRejected(t *testing.T) {
+ 	dir := filepath.Join("..", "..", "testdata/eval/unsupported")
+ 	entries, err := os.ReadDir(dir)
+ 	if err != nil {
+diff --git a/internal/runner/project_integration_test.go b/internal/runner/project_integration_test.go
+index fd7a198..d34939a 100644
+--- a/internal/runner/project_integration_test.go
++++ b/internal/runner/project_integration_test.go
+@@ -3,8 +3,11 @@ package runner_test
+ import (
+ 	"bytes"
+ 	"context"
++	"encoding/json"
++	"image/png"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"sync"
+ 	"testing"
+ 	"time"
+@@ -56,6 +59,94 @@ func TestModularFlatPreviewEquivalence(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 	}
++	// Reopen each independently saved scene and compare actual Blender state.
++	probe := filepath.Join(parent, "probe_equivalence.py")
++	src := `
++import bpy, json, sys
++s = bpy.context.scene
++s.frame_set(1)
++title = bpy.data.objects.get("title__text")
++assert title is not None and title.type == "FONT"
++assert title.data.body == "MoBlend"
++assert abs(title.location.z - 0.5) < 1e-5
++assert s.camera is not None and s.camera.name == "cam"
++assert list(s.camera.location) == [0.0, -4.0, 1.0]
++assert len(title.data.materials) == 1
++objects = []
++for o in sorted(s.objects, key=lambda o: o.name):
++    mats = []
++    for mat in getattr(o.data, "materials", []):
++        bsdf = mat.node_tree.nodes.get("Principled BSDF")
++        mats.append({"color": list(bsdf.inputs["Base Color"].default_value), "roughness": bsdf.inputs["Roughness"].default_value})
++    objects.append({"id": o.name, "type": o.type, "location": list(o.location), "rotation": list(o.rotation_euler), "scale": list(o.scale), "materials": mats})
++state = {"objects": objects, "camera": s.camera.name, "lens": s.camera.data.lens, "resolution": [s.render.resolution_x, s.render.resolution_y], "frames": [s.frame_start, s.frame_end], "fps": s.render.fps}
++with open(sys.argv[sys.argv.index("--")+1], "w") as f:
++    json.dump(state, f, sort_keys=True)
++`
++	if err := os.WriteFile(probe, []byte(src), 0600); err != nil {
++		t.Fatal(err)
++	}
++	var states []any
++	for _, result := range []runner.ApplyResult{rm, rf} {
++		stateFile := filepath.Join(result.JobDir, "scene_probe.json")
++		if _, err := runner.Run(context.Background(), runner.Options{Blender: blender, BlendFile: result.Blend, Python: probe, ExtraArgs: []string{stateFile}, Timeout: 2 * time.Minute}); err != nil {
++			t.Fatal(err)
++		}
++		raw, err := os.ReadFile(stateFile)
++		if err != nil {
++			t.Fatal(err)
++		}
++		var state any
++		if err := json.Unmarshal(raw, &state); err != nil {
++			t.Fatal(err)
++		}
++		states = append(states, state)
++	}
++	if !reflect.DeepEqual(states[0], states[1]) {
++		t.Fatalf("saved Blender states differ: %v / %v", states[0], states[1])
++	}
++	// Decode and compare pixels under this same CPU Blender pin, allowing a
++	// small channel tolerance. Require spatial variation to reject empty renders.
++	images := []string{rm.PNG, rf.PNG}
++	var pixels [][][4]uint32
++	for _, path := range images {
++		f, err := os.Open(path)
++		if err != nil {
++			t.Fatal(err)
++		}
++		img, err := png.Decode(f)
++		f.Close()
++		if err != nil {
++			t.Fatal(err)
++		}
++		bounds := img.Bounds()
++		if bounds.Dx() != 64 || bounds.Dy() != 64 {
++			t.Fatalf("unexpected PNG bounds %v", bounds)
++		}
++		values := [][4]uint32{}
++		distinct := map[[4]uint32]bool{}
++		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
++			for x := bounds.Min.X; x < bounds.Max.X; x++ {
++				r, g, b, a := img.At(x, y).RGBA()
++				p := [4]uint32{r, g, b, a}
++				values = append(values, p)
++				distinct[p] = true
++			}
++		}
++		if len(distinct) < 8 {
++			t.Fatalf("render lacks content: %d colors", len(distinct))
++		}
++		pixels = append(pixels, values)
++	}
++	for i, a := range pixels[0] {
++		for c, v := range a {
++			delta := int64(v) - int64(pixels[1][i][c])
++			if delta < -257 || delta > 257 {
++				t.Fatalf("PNG mismatch pixel %d channel %d: %d", i, c, delta)
++			}
++		}
++	}
++
+ }
+ 
+ func TestConcurrentShotPreviewsIsolated(t *testing.T) {
+@@ -80,16 +171,14 @@ func TestConcurrentShotPreviewsIsolated(t *testing.T) {
+ 				errs[i] = err
+ 				return
+ 			}
+-			shotParent := filepath.Join(parent, shot)
+-			_ = os.MkdirAll(shotParent, 0o755)
++
+ 			res, err := runner.RunApply(context.Background(), runner.ApplyOptions{
+-				Blender: blender, Parent: shotParent, Artifacts: art, Decl: r.Decl,
+-				Mode: "preview", RenderFrame: 1, Timeout: 3 * time.Minute,
++				Blender: blender, Parent: parent, Artifacts: art, Decl: r.Decl,
++				Mode: "preview", RenderFrame: 1, Timeout: 3 * time.Minute, Resolved: &r,
+ 			})
+ 			errs[i] = err
+ 			if err == nil {
+ 				outs[i] = res.JobDir
+-				_, _ = project.WriteDependencyManifest(filepath.Join(res.JobDir, "out"), r)
+ 			}
+ 		}(i, shot)
+ 	}
+@@ -108,7 +197,11 @@ func TestConcurrentShotPreviewsIsolated(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 	}
+-	if outs[0] == outs[1] || outs[1] == outs[2] {
+-		t.Fatal("shot jobs must use distinct directories")
++	for i := range outs {
++		for j := 0; j < i; j++ {
++			if outs[i] == outs[j] {
++				t.Fatal("shot jobs must use distinct directories")
++			}
++		}
+ 	}
+ }
+diff --git a/internal/runner/runner.go b/internal/runner/runner.go
+index 89ed735..b4a4ea6 100644
+--- a/internal/runner/runner.go
++++ b/internal/runner/runner.go
+@@ -23,7 +23,7 @@ type Options struct {
+ 	ExtraArgs []string // passed after "--"
+ 	WorkDir   string
+ 	Timeout   time.Duration
+-	Env       []string // if nil, inherits process env
++	Env       []string // optional explicit environment; default is an isolated allowlist
+ }
+ 
+ // Result captures process outcome.
+@@ -57,7 +57,7 @@ func BuildArgs(opt Options) []string {
+ }
+ 
+ // Run executes Blender with opt. Context cancellation kills the process tree
+-// via CommandContext.
++// using a dedicated process group on Linux/macOS.
+ func Run(ctx context.Context, opt Options) (Result, error) {
+ 	if opt.Blender == "" {
+ 		return Result{}, errors.New("blender executable path is required")
+@@ -73,8 +73,16 @@ func Run(ctx context.Context, opt Options) (Result, error) {
+ 	if opt.WorkDir != "" {
+ 		cmd.Dir = opt.WorkDir
+ 	}
+-	if opt.Env != nil {
+-		cmd.Env = opt.Env
++	configureProcessTree(cmd)
++	cmd.WaitDelay = 2 * time.Second
++	cmd.Env = opt.Env
++	if cmd.Env == nil {
++		envDir, err := os.MkdirTemp(opt.WorkDir, "moblend-env-*")
++		if err != nil {
++			return Result{}, fmt.Errorf("create isolated environment: %w", err)
++		}
++		defer os.RemoveAll(envDir)
++		cmd.Env = isolatedEnv(envDir)
+ 	}
+ 
+ 	out, err := cmd.CombinedOutput()
+@@ -87,17 +95,18 @@ func Run(ctx context.Context, opt Options) (Result, error) {
+ 		res.ExitCode = 0
+ 		return res, nil
+ 	}
++	if ctx.Err() != nil {
++		res.ExitCode = -1
++		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
++			return res, fmt.Errorf("blender timed out: %w\n%s", ctx.Err(), out)
++		}
++		return res, fmt.Errorf("blender canceled: %w\n%s", ctx.Err(), out)
++	}
+ 	var ee *exec.ExitError
+ 	if errors.As(err, &ee) {
+ 		res.ExitCode = ee.ExitCode()
+ 		return res, fmt.Errorf("blender exit %d: %w\n%s", res.ExitCode, err, out)
+ 	}
+-	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+-		return res, fmt.Errorf("blender timed out: %w\n%s", ctx.Err(), out)
+-	}
+-	if errors.Is(ctx.Err(), context.Canceled) {
+-		return res, fmt.Errorf("blender canceled: %w\n%s", ctx.Err(), out)
+-	}
+ 	return res, fmt.Errorf("blender run failed: %w\n%s", err, out)
+ }
+ 
+@@ -131,3 +140,17 @@ func MustAbs(path string) string {
+ 	}
+ 	return a
+ }
++
++func isolatedEnv(dir string) []string {
++	env := []string{}
++	for _, key := range []string{"PATH", "LANG", "LC_ALL", "SYSTEMROOT", "WINDIR"} {
++		if v, ok := os.LookupEnv(key); ok {
++			env = append(env, key+"="+v)
++		}
++	}
++	for _, key := range []string{"HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "TMPDIR"} {
++		env = append(env, key+"="+dir)
++	}
++	// Do not inherit Python startup paths, credentials, or Blender user scripts.
++	return env
++}
+diff --git a/internal/spec/decode.go b/internal/spec/decode.go
+index 05ca3a7..1e060dd 100644
+--- a/internal/spec/decode.go
++++ b/internal/spec/decode.go
+@@ -218,3 +218,20 @@ func escapePointer(s string) string {
+ 	s = strings.ReplaceAll(s, "/", "~1")
+ 	return s
+ }
++
++// CheckJSON rejects duplicate keys, trailing values, and non-finite numbers for
++// all versioned input documents before their own typed schema decoding.
++func CheckJSON(data []byte) error {
++	if err := rejectDuplicateKeys(data); err != nil {
++		return err
++	}
++	dec := json.NewDecoder(bytes.NewReader(data))
++	var value any
++	if err := dec.Decode(&value); err != nil {
++		return err
++	}
++	if err := rejectTrailing(dec); err != nil {
++		return err
++	}
++	return rejectNonFinite(data)
++}
+--- /dev/null
++++ b/cmd/blendctl/main_test.go
+@@ -0,0 +1,110 @@
++package main
++
++import (
++	"encoding/json"
++	"io"
++	"os"
++	"path/filepath"
++	"strings"
++	"sync"
++	"testing"
++)
++
++func capture(t *testing.T, fn func() error) (string, error) {
++	t.Helper()
++	old := os.Stdout
++	f, err := os.CreateTemp(t.TempDir(), "stdout")
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer f.Close()
++	os.Stdout = f
++	defer func() { os.Stdout = old }()
++	callErr := fn()
++	if _, err := f.Seek(0, 0); err != nil {
++		t.Fatal(err)
++	}
++	raw, err := io.ReadAll(f)
++	if err != nil {
++		t.Fatal(err)
++	}
++	return string(raw), callErr
++}
++
++func TestValidateAllShotsReportsBrokenUnselected(t *testing.T) {
++	path := filepath.Join("..", "..", "testdata/project/shots/broken_unselected/project.json")
++	raw, err := capture(t, func() error { return cmdValidate([]string{path, "--shot", "good", "--json"}) })
++	if err != nil {
++		t.Fatalf("selected good: %s %v", raw, err)
++	}
++	raw, err = capture(t, func() error { return cmdValidate([]string{path, "--all-shots", "--json"}) })
++	if err == nil {
++		t.Fatal("all-shots accepted broken shot")
++	}
++	var report struct {
++		OK          bool                          `json:"ok"`
++		Diagnostics []struct{ Code, Hint string } `json:"diagnostics"`
++	}
++	if e := json.Unmarshal([]byte(raw), &report); e != nil {
++		t.Fatal(e)
++	}
++	found := false
++	for _, d := range report.Diagnostics {
++		if d.Code == "PROJ_FILE_MISSING" && strings.Contains(d.Hint, "shot bad") {
++			found = true
++		}
++	}
++	if report.OK || !found {
++		t.Fatalf("missing attributed bad-shot error: %s", raw)
++	}
++}
++
++func TestCompileConcurrentShotOutputs(t *testing.T) {
++	path := filepath.Join("..", "..", "examples/projects/three_shots/project.json")
++	parent := t.TempDir()
++	shots := []string{"intro", "outro", "intro"}
++	errs := make([]error, len(shots))
++	var wg sync.WaitGroup
++	for i, shot := range shots {
++		wg.Add(1)
++		go func(i int, shot string) {
++			defer wg.Done()
++			errs[i] = cmdCompile([]string{path, "--shot", shot, "--out", parent})
++		}(i, shot)
++	}
++	wg.Wait()
++	for _, err := range errs {
++		if err != nil {
++			t.Fatal(err)
++		}
++	}
++	for shot, want := range map[string]int{"intro": 2, "outro": 1} {
++		jobs, err := filepath.Glob(filepath.Join(parent, shot, "moblend-job-*"))
++		if err != nil || len(jobs) != want {
++			t.Fatalf("%s jobs=%v err=%v", shot, jobs, err)
++		}
++		for _, job := range jobs {
++			for _, name := range []string{"apply_scene.py", "scene_data.json", "source_map.json", "dependencies.json"} {
++				if _, err := os.Stat(filepath.Join(job, name)); err != nil {
++					t.Fatal(err)
++				}
++			}
++		}
++	}
++}
++
++func TestOutputParentRejectsEscape(t *testing.T) {
++	for _, id := range []string{"../escape", "/tmp/escape", "a/b"} {
++		if _, err := outputParent(t.TempDir(), id); err == nil {
++			t.Fatalf("accepted %q", id)
++		}
++	}
++	root := t.TempDir()
++	outside := t.TempDir()
++	if err := os.Symlink(outside, filepath.Join(root, "intro")); err != nil {
++		t.Fatal(err)
++	}
++	if _, err := outputParent(root, "intro"); err == nil {
++		t.Fatal("accepted escaping symlink")
++	}
++}
+--- /dev/null
++++ b/cmd/blendctl/signal_linux_test.go
+@@ -0,0 +1,107 @@
++//go:build linux
++
++package main
++
++import (
++	"bytes"
++	"os"
++	"os/exec"
++	"path/filepath"
++	"strings"
++	"syscall"
++	"testing"
++	"time"
++)
++
++func TestCLISignalsCancelJobs(t *testing.T) {
++	dir := t.TempDir()
++	binary := filepath.Join(dir, "blendctl")
++	if out, err := exec.Command("go", "build", "-o", binary, ".").CombinedOutput(); err != nil {
++		t.Fatalf("build: %v %s", err, out)
++	}
++	for _, mode := range []string{"preview", "render", "smoke"} {
++		t.Run(mode, func(t *testing.T) {
++			parent := t.TempDir()
++			ready := filepath.Join(parent, "ready")
++			fake := filepath.Join(parent, "blender")
++			script := `#!/bin/sh
++if [ "$1" = "--version" ]; then echo 'Blender 5.3.0 Beta'; exit 0; fi
++sleep 60 &
++printf '%s' "$!" > '` + ready + `'
++wait
++`
++			if err := os.WriteFile(fake, []byte(script), 0700); err != nil {
++				t.Fatal(err)
++			}
++			args := []string{mode}
++			if mode != "smoke" {
++				args = append(args, filepath.Join("..", "..", "testdata/compile/title_render_tiny.json"))
++			}
++			args = append(args, "--out", parent)
++			cmd := exec.Command(binary, args...)
++			cmd.Env = append(os.Environ(), "MOBLEND_BLENDER="+fake)
++			var output bytes.Buffer
++			cmd.Stdout = &output
++			cmd.Stderr = &output
++			if err := cmd.Start(); err != nil {
++				t.Fatal(err)
++			}
++			defer func() {
++				if cmd.ProcessState == nil {
++					_ = cmd.Process.Kill()
++					_ = cmd.Wait()
++				}
++			}()
++			deadline := time.Now().Add(5 * time.Second)
++			var child []byte
++			for time.Now().Before(deadline) {
++				child, _ = os.ReadFile(ready)
++				if len(child) > 0 {
++					break
++				}
++				time.Sleep(10 * time.Millisecond)
++			}
++			if len(child) == 0 {
++				t.Fatal("fake Blender not ready")
++			}
++			sig := os.Signal(os.Interrupt)
++			if mode == "render" {
++				sig = syscall.SIGTERM
++			}
++			if err := cmd.Process.Signal(sig); err != nil {
++				t.Fatal(err)
++			}
++			done := make(chan error, 1)
++			go func() { done <- cmd.Wait() }()
++			select {
++			case err := <-done:
++				if err == nil {
++					t.Fatalf("%s succeeded after signal", mode)
++				}
++			case <-time.After(5 * time.Second):
++				t.Fatal("CLI did not return on signal")
++			}
++			// The CLI must handle the signal through context cancellation, rather than
++			// default signal termination (which cannot emit the structured job result).
++			if !strings.Contains(output.String(), "canceled") {
++				t.Fatalf("signal bypassed cancellation path: %s", output.String())
++			}
++			if mode != "smoke" {
++				failed, _ := filepath.Glob(filepath.Join(parent, "moblend-job-*", "out", "manifest.failed.json"))
++				success, _ := filepath.Glob(filepath.Join(parent, "moblend-job-*", "out", "manifest.json"))
++				if len(failed) != 1 || len(success) != 0 {
++					t.Fatalf("failed=%v success=%v", failed, success)
++				}
++			}
++			stat, err := os.ReadFile("/proc/" + string(child) + "/stat")
++			if err == nil {
++				fields := strings.Fields(string(stat)[strings.LastIndex(string(stat), ")")+1:])
++				if fields[0] != "Z" {
++					t.Fatalf("child still alive: %s", child)
++				}
++			} else if !os.IsNotExist(err) {
++				t.Fatal(err)
++			}
++		})
++	}
++}
+--- /dev/null
++++ b/internal/project/hardening_test.go
+@@ -0,0 +1,187 @@
++package project_test
++
++import (
++	"crypto/sha256"
++	"encoding/json"
++	"fmt"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/ndx-au/MoBlend/internal/diag"
++	"github.com/ndx-au/MoBlend/internal/project"
++)
++
++func requireCode(t *testing.T, err error, code string) {
++	t.Helper()
++	el, ok := err.(diag.ErrorList)
++	if !ok {
++		t.Fatalf("want %s, got %T: %v", code, err, err)
++	}
++	for _, d := range el {
++		if d.Code == code {
++			return
++		}
++	}
++	t.Fatalf("want %s, got %v", code, err)
++}
++
++func writeJSON(t *testing.T, path string, doc any) {
++	t.Helper()
++	b, err := json.Marshal(doc)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(path, b, 0600); err != nil {
++		t.Fatal(err)
++	}
++}
++
++func TestGraphBounds(t *testing.T) {
++	for _, tc := range []struct {
++		name, code      string
++		count, padding  int
++		chain, absolute bool
++	}{
++		{name: "depth", code: "LIM_IMPORT_DEPTH", count: 10, chain: true},
++		{name: "file bytes", code: "LIM_FILE_BYTES", count: 1, padding: project.MaxFileBytes + 1},
++		{name: "project bytes", code: "LIM_PROJECT_BYTES", count: 20, padding: project.MaxFileBytes - 1024},
++		{name: "module count", code: "LIM_MODULES", count: 33},
++		{name: "absolute path", code: "PROJ_PATH_ABS", count: 1, absolute: true},
++	} {
++		t.Run(tc.name, func(t *testing.T) {
++			dir := t.TempDir()
++			mods := []project.ManifestMod{}
++			for i := 0; i < tc.count; i++ {
++				id := fmt.Sprintf("m%d", i)
++				path := id + ".json"
++				doc := project.ModuleFile{ModuleVersion: project.ModuleVersion, Kind: "module", Namespace: id}
++				if tc.chain && i+1 < tc.count {
++					doc.Imports = []project.Import{{Alias: "next", Module: fmt.Sprintf("m%d", i+1)}}
++				}
++				raw, err := json.Marshal(doc)
++				if err != nil {
++					t.Fatal(err)
++				}
++				raw = append(raw, []byte(strings.Repeat(" ", tc.padding))...)
++				if err := os.WriteFile(filepath.Join(dir, path), raw, 0600); err != nil {
++					t.Fatal(err)
++				}
++				if tc.absolute {
++					path = filepath.Join(dir, path)
++				}
++				mods = append(mods, project.ManifestMod{ID: id, Path: path})
++			}
++			man := project.Manifest{Kind: "project", ProjectVersion: project.ProjectVersion, Entry: "m0", Modules: mods}
++			path := filepath.Join(dir, "project.json")
++			writeJSON(t, path, man)
++			_, err := project.LoadAndResolve(path)
++			requireCode(t, err, tc.code)
++		})
++	}
++}
++
++func TestUnreachableListedGraphRejected(t *testing.T) {
++	for _, tc := range []struct{ name, code string }{{"missing", "PROJ_FILE_MISSING"}, {"version", "MOD_VERSION"}, {"cycle", "PROJ_CYCLE"}} {
++		t.Run(tc.name, func(t *testing.T) {
++			dir := t.TempDir()
++			copyTree(t, filepath.Join(repoRoot(t), "examples/projects/title_modular"), dir)
++			path := filepath.Join(dir, "project.json")
++			raw, err := os.ReadFile(path)
++			if err != nil {
++				t.Fatal(err)
++			}
++			var man project.Manifest
++			if err := json.Unmarshal(raw, &man); err != nil {
++				t.Fatal(err)
++			}
++			man.Modules = append(man.Modules, project.ManifestMod{ID: "unused", Path: "unused.json"})
++			if tc.name != "missing" {
++				mod := project.ModuleFile{Kind: "module", ModuleVersion: project.ModuleVersion, Namespace: "unused"}
++				if tc.name == "version" {
++					mod.ModuleVersion = "999"
++				} else {
++					mod.Imports = []project.Import{{Alias: "self", Module: "unused"}}
++				}
++				writeJSON(t, filepath.Join(dir, "unused.json"), mod)
++			}
++			writeJSON(t, path, man)
++			_, err = project.LoadAndResolve(path)
++			requireCode(t, err, tc.code)
++		})
++	}
++}
++
++func TestDependencyManifestUsesLoadSnapshot(t *testing.T) {
++	dir := t.TempDir()
++	copyTree(t, filepath.Join(repoRoot(t), "examples/projects/three_shots"), dir)
++	path := filepath.Join(dir, "project.json")
++	raw, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	r, err := project.LoadAndResolveShot(path, "intro")
++	if err != nil {
++		t.Fatal(err)
++	}
++	before, err := project.BuildDependencyManifest(r)
++	if err != nil {
++		t.Fatal(err)
++	}
++	for _, f := range r.Files {
++		if err := os.Remove(filepath.Join(dir, f)); err != nil {
++			t.Fatal(err)
++		}
++	}
++	after, err := project.BuildDependencyManifest(r)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if !reflect.DeepEqual(before.Files, after.Files) || before.ResolvedDataSHA != after.ResolvedDataSHA {
++		t.Fatal("provenance re-read disk")
++	}
++	expected := fmt.Sprintf("%x", sha256.Sum256(raw))
++	found := false
++	for _, f := range after.Files {
++		if f.Path == "project.json" {
++			found = true
++			if f.SHA256 != expected {
++				t.Fatalf("manifest digest = %s", f.SHA256)
++			}
++		}
++	}
++	if !found {
++		t.Fatal("manifest snapshot omitted")
++	}
++}
++
++func TestUnsafeShotIDsRejectedGlobally(t *testing.T) {
++	for _, id := range []string{"../escape", "/tmp/escape", "a/b", "a\\b", "", ".", "..", "a-b"} {
++		t.Run(id, func(t *testing.T) {
++			dir := t.TempDir()
++			copyTree(t, filepath.Join(repoRoot(t), "examples/projects/three_shots"), dir)
++			path := filepath.Join(dir, "project.json")
++			raw, err := os.ReadFile(path)
++			if err != nil {
++				t.Fatal(err)
++			}
++			var man project.Manifest
++			if err := json.Unmarshal(raw, &man); err != nil {
++				t.Fatal(err)
++			}
++			man.Shots[2].ID = id
++			writeJSON(t, path, man)
++			_, err = project.LoadAndResolveShot(path, "intro")
++			requireCode(t, err, "SHOT_ID")
++		})
++	}
++}
++
++func TestDetectKindRequiresKind(t *testing.T) {
++	k, err := project.DetectKind([]byte(`{"schema_version":"1.0.0","project_version":"1.0.0"}`))
++	if err != nil || k != project.KindScene {
++		t.Fatalf("kind=%v err=%v", k, err)
++	}
++}
+--- /dev/null
++++ b/internal/runner/hardening_linux_test.go
+@@ -0,0 +1,175 @@
++//go:build linux
++
++package runner_test
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/ndx-au/MoBlend/internal/compile"
++	"github.com/ndx-au/MoBlend/internal/runner"
++)
++
++func fakeExecutable(t *testing.T, body string) string {
++	t.Helper()
++	path := filepath.Join(t.TempDir(), "blender")
++	if err := os.WriteFile(path, []byte("#!/bin/sh\n"+body), 0700); err != nil {
++		t.Fatal(err)
++	}
++	return path
++}
++
++func TestRunTerminatesDescendants(t *testing.T) {
++	for _, timeout := range []bool{false, true} {
++		t.Run(fmt.Sprintf("timeout=%v", timeout), func(t *testing.T) {
++			dir := t.TempDir()
++			fake := fakeExecutable(t, `sleep 60 &
++child=$!
++printf '%s %s' "$$" "$child" > pids
++wait
++`)
++			ctx, cancel := context.WithCancel(context.Background())
++			defer cancel()
++			duration := time.Duration(0)
++			if timeout {
++				duration = time.Second
++			}
++			done := make(chan error, 1)
++			go func() {
++				_, err := runner.Run(ctx, runner.Options{Blender: fake, WorkDir: dir, Timeout: duration})
++				done <- err
++			}()
++			var raw []byte
++			deadline := time.Now().Add(3 * time.Second)
++			for time.Now().Before(deadline) {
++				raw, _ = os.ReadFile(filepath.Join(dir, "pids"))
++				if len(strings.Fields(string(raw))) == 2 {
++					break
++				}
++				time.Sleep(10 * time.Millisecond)
++			}
++			if len(strings.Fields(string(raw))) != 2 {
++				t.Fatal("fake process never became ready")
++			}
++			if !timeout {
++				cancel()
++			}
++			select {
++			case err := <-done:
++				want := context.Canceled
++				if timeout {
++					want = context.DeadlineExceeded
++				}
++				if !errors.Is(err, want) {
++					t.Fatalf("want %v, got %v", want, err)
++				}
++			case <-time.After(5 * time.Second):
++				t.Fatal("cancellation hung")
++			}
++			for _, pid := range strings.Fields(string(raw)) {
++				// A reparented zombie is dead; Linux PID 1 may defer reaping it.
++				alive := func() bool {
++					stat, err := os.ReadFile("/proc/" + pid + "/stat")
++					if os.IsNotExist(err) {
++						return false
++					}
++					if err != nil {
++						t.Fatal(err)
++					}
++					fields := strings.Fields(string(stat)[strings.LastIndex(string(stat), ")")+1:])
++					return fields[0] != "Z"
++				}
++				until := time.Now().Add(time.Second)
++				for alive() && time.Now().Before(until) {
++					time.Sleep(10 * time.Millisecond)
++				}
++				if alive() {
++					t.Errorf("descendant %s still running", pid)
++				}
++			}
++		})
++	}
++}
++
++func TestRunEnvironmentIsolated(t *testing.T) {
++	t.Setenv("MOBLEND_TEST_SECRET", "secret")
++	fake := fakeExecutable(t, `test -z "$MOBLEND_TEST_SECRET" || exit 9
++test -n "$HOME" && test "$HOME" = "$XDG_CACHE_HOME" || exit 8
++printf '%s' "$HOME"
++`)
++	dir := t.TempDir()
++	result, err := runner.Run(context.Background(), runner.Options{Blender: fake, WorkDir: dir})
++	if err != nil {
++		t.Fatal(err)
++	}
++	if !strings.HasPrefix(result.Stdout, dir+"/") {
++		t.Fatalf("home not private: %s", result.Stdout)
++	}
++}
++
++func TestApplyRejectsIncompleteFrameSets(t *testing.T) {
++	raw, err := os.ReadFile(filepath.Join("..", "..", "testdata/compile/title_render_tiny.json"))
++	if err != nil {
++		t.Fatal(err)
++	}
++	art, v, err := compile.CompileJSON(raw)
++	if err != nil {
++		t.Fatal(err)
++	}
++	for _, names := range [][]string{{"frame_0001.png"}, {"frame_0001.png", "wrong.png"}, {"frame_0001.png", "frame_0002.png", "extra.png"}} {
++		t.Run(strings.Join(names, ","), func(t *testing.T) {
++			body := `if [ "$1" = "--version" ]; then echo 'Blender 5.3.0 Beta'; exit 0; fi
++while [ "$1" != "--out-dir" ]; do shift; done
++shift
++out="$1"
++mkdir -p "$out/frames"
++printf scene > "$out/scene.blend"
++`
++			for _, name := range names {
++				body += "printf png > \"$out/frames/" + name + "\"\n"
++			}
++			fake := fakeExecutable(t, body)
++			result, err := runner.RunApply(context.Background(), runner.ApplyOptions{Blender: fake, Parent: t.TempDir(), Artifacts: art, Decl: v.Decl, Mode: "render"})
++			if err == nil {
++				t.Fatal("partial/misnamed frame set accepted")
++			}
++			if _, err := os.Stat(filepath.Join(result.JobDir, "out", "manifest.json")); !os.IsNotExist(err) {
++				t.Fatal("success manifest on incomplete output")
++			}
++			if _, err := os.Stat(filepath.Join(result.JobDir, "out", "manifest.failed.json")); err != nil {
++				t.Fatal(err)
++			}
++		})
++	}
++}
++
++func TestApplyTimeoutHasFailedMarker(t *testing.T) {
++	raw, err := os.ReadFile(filepath.Join("..", "..", "testdata/compile/title_render_tiny.json"))
++	if err != nil {
++		t.Fatal(err)
++	}
++	art, v, err := compile.CompileJSON(raw)
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	fake := fakeExecutable(t, `if [ "$1" = "--version" ]; then echo 'Blender 5.3.0 Beta'; exit 0; fi
++sleep 60
++`)
++	result, err := runner.RunApply(context.Background(), runner.ApplyOptions{Blender: fake, Parent: t.TempDir(), Artifacts: art, Decl: v.Decl, Timeout: 50 * time.Millisecond})
++	if !errors.Is(err, context.DeadlineExceeded) {
++		t.Fatalf("got %v", err)
++	}
++	if _, err := os.Stat(filepath.Join(result.JobDir, "out", "manifest.failed.json")); err != nil {
++		t.Fatal(err)
++	}
++	if _, err := os.Stat(filepath.Join(result.JobDir, "out", "manifest.json")); !os.IsNotExist(err) {
++		t.Fatal("unexpected success")
++	}
++}
+--- /dev/null
++++ b/internal/runner/process_other.go
+@@ -0,0 +1,8 @@
++//go:build !linux && !darwin
++
++package runner
++
++import "os/exec"
++
++// Other platforms are not advertised until process-tree cancellation is tested.
++func configureProcessTree(cmd *exec.Cmd) {}
+--- /dev/null
++++ b/internal/runner/process_unix.go
+@@ -0,0 +1,13 @@
++//go:build linux || darwin
++
++package runner
++
++import (
++	"os/exec"
++	"syscall"
++)
++
++func configureProcessTree(cmd *exec.Cmd) {
++	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
++	cmd.Cancel = func() error { return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL) }
++}
+
+```

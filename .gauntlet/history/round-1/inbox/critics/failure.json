@@ -1,0 +1,70 @@
+{
+  "persona": "failure",
+  "plan_hash": "915d4f971c9d7d87f3eb48188232c1df13070239b936944c064d2554fe636db0",
+  "findings": [
+    {
+      "id": "proc-tree-orphan",
+      "severity": "high",
+      "location": "internal/runner/runner.go:Run",
+      "bug": "Comment and ARCHITECTURE/C03 claim cancellation kills the Blender process tree; implementation is bare exec.CommandContext with no Setpgid/process-group kill. TestSmokeCancel only asserts parent error, not child-tree exit.",
+      "predicted": "Timeout/cancel (and CLI SIGINT) can leave orphan Blender/render children holding GPU/CPU and writing into a job dir after the parent already returned failure.",
+      "fix_hint": "Start Blender in its own process group and kill the group on ctx Done; assert no live descendants in timeout+cancel tests."
+    },
+    {
+      "id": "cli-no-signal-ctx",
+      "severity": "high",
+      "location": "cmd/blendctl/main.go:cmdApply",
+      "bug": "preview/render/smoke use context.Background() with no os/signal wiring; Ctrl+C kills blendctl without cooperative cancel of Run/RunApply.",
+      "predicted": "Interactive cancel leaves Blender running against the job tree; subsequent agents may see late PNGs or a half-written scene.blend with no failed marker update.",
+      "fix_hint": "Propagate a signal-notified context into RunApply/RunSmoke so cancel takes the same path as Timeout."
+    },
+    {
+      "id": "partial-frames-ok",
+      "severity": "high",
+      "location": "internal/runner/apply.go:RunApply",
+      "bug": "Render success only requires len(frames)>0; never checks inclusive decl frame_end-frame_start+1 or expected frame_NNNN.png names. Cancel mid-loop already leaves partial frames + scene.blend (saved before the render loop in apply_scene.py).",
+      "predicted": "Any exit-0 with a non-empty subset (or agents that trust PNG/.blend presence over manifests) treats incomplete shot output as finished; C03/C06 poison remains in the job out/ tree.",
+      "fix_hint": "Require exact expected frame set before WriteSuccessManifest; on failure keep failed marker and document that PNG/.blend alone are not success."
+    },
+    {
+      "id": "timeout-untested",
+      "severity": "medium",
+      "location": "RUN-03 / playbook C03 vs internal/runner/smoke_integration_test.go",
+      "bug": "Phase 4 plan and RUN-03 claim timeout honesty; suite only has immediate cancel. Playbook run marks C03 PASS via cancel alone — timeout path unexercised.",
+      "predicted": "DeadlineExceeded mis-reporting or hung CombinedOutput after kill stays latent until production long renders.",
+      "fix_hint": "Add a short artificial Timeout fixture that asserts timed-out error, no manifest.json, and process-group gone."
+    },
+    {
+      "id": "success-write-no-rollback",
+      "severity": "medium",
+      "location": "internal/runner/apply.go:WriteSuccessManifest call site",
+      "bug": "If WriteSuccessManifest fails after Blender produced frames/PNG, RunApply returns error without WriteFailedMarker; early extract/compile failures after JobDir create also leave unmarked orphan trees.",
+      "predicted": "Disk-full or permission errors yield ambiguous job dirs: real frames, no complete manifest, no failed marker — recovery heuristics diverge.",
+      "fix_hint": "On any post-jobDir failure path, always WriteFailedMarker (best-effort) before returning; never leave success-looking bytes without a terminal status file."
+    },
+    {
+      "id": "deps-after-success-ignored",
+      "severity": "medium",
+      "location": "cmd/blendctl/main.go:cmdApply",
+      "bug": "dependencies.json is written only after RunApply success with `_, _ = WriteDependencyManifest(...)` — errors discarded; crash between manifest.json and dependencies.json leaves SHOT-02 provenance missing on an otherwise complete job.",
+      "predicted": "Shot isolation/hash audits and agent handoffs see complete renders without dependency digests; concurrent retries cannot prove input snapshot.",
+      "fix_hint": "Write dependencies inside RunApply before advertising success (or fail the job if provenance write fails)."
+    },
+    {
+      "id": "compile-partial-out",
+      "severity": "medium",
+      "location": "cmd/blendctl/main.go:cmdCompile + compile.WriteToDir",
+      "bug": "compile writes script then data straight into user --out; ARCHITECTURE nonempty-refuse/overwrite flag never implemented. Crash mid-write leaves mixed generations in the destination.",
+      "predicted": "Retry or agent validate against a half-updated out/ pairs new data with old script (or vice versa) and looks like a valid compile.",
+      "fix_hint": "Stage to a temp dir and rename into --out, or refuse nonempty destinations without an explicit overwrite mode."
+    },
+    {
+      "id": "jobdir-never-cleaned",
+      "severity": "low",
+      "location": "internal/runner/runner.go:JobDir + apply/smoke success/fail paths",
+      "bug": "Unique moblend-job-* dirs under --out accumulate forever; no retention, current symlink, or failed-tree scrub. Plan deferred hostile delete correctly but shipped no bounded cleanup policy.",
+      "predicted": "Repeated shot previews fill disk; consumers scanning DIR/<shot>/* pick a stale complete job beside a newer failed one.",
+      "fix_hint": "Emit a stable latest pointer atomically and document retention; optional --keep-failed only."
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "persona": "security",
+  "plan_hash": "915d4f971c9d7d87f3eb48188232c1df13070239b936944c064d2554fe636db0",
+  "findings": [
+    {
+      "id": "shot-id-outdir-escape",
+      "severity": "high",
+      "location": "cmd/blendctl/main.go:cmdApply",
+      "bug": "Phase 8 nests `--out DIR --shot ID` via filepath.Join(outParent, shot) with no shot-id allowlist; project_v1.json and LoadAndResolveShot accept any nonempty shot id. Absolute ids discard DIR; `../` ids escape the intended nest.",
+      "predicted": "A malicious or agent-authored project can redirect job dirs (and Blender writes under them) outside the caller’s `--out` tree while still passing resolve/validate.",
+      "fix_hint": "Constrain shot ids to `^[A-Za-z][A-Za-z0-9_]*$` in schema+loader and reject Join results that leave the resolved `--out` root."
+    },
+    {
+      "id": "compile-out-overwrite",
+      "severity": "medium",
+      "location": "cmd/blendctl/main.go:cmdCompile / ARCHITECTURE job hygiene",
+      "bug": "Plan required refusing nonempty destinations unless explicit overwrite; compile.WriteToDir unconditionally overwrites apply_scene.py, scene_data.json, source_map.json, and dependencies.json in the caller-supplied `--out` directory.",
+      "predicted": "Agents or scripts pointed at a shared/existing directory clobber non-job files that share those names (confused-deputy write).",
+      "fix_hint": "Require empty `--out` or an explicit `--overwrite` limited to MoBlend-owned artifact names before WriteToDir."
+    },
+    {
+      "id": "blender-env-inheritance",
+      "severity": "medium",
+      "location": "internal/runner/runner.go:Run",
+      "bug": "ARCHITECTURE asked for explicit job environment; Run leaves Options.Env nil so Blender inherits the full parent environ (secrets, tokens, proxy creds).",
+      "predicted": "Any Blender/Python side effect or crash dump can observe ambient credentials the orchestrator never intended to expose into the render child.",
+      "fix_hint": "Pass a minimal allowlisted env (PATH, MOBLEND_*, display/locale as needed) instead of inheriting by default."
+    },
+    {
+      "id": "symlink-containment-toctou",
+      "severity": "medium",
+      "location": "internal/project/resolve.go:resolveContainedPath",
+      "bug": "Containment EvalSymlinks then returns the pre-symlink abs path; later load/hash (readBounded, BuildDependencyManifest) re-open that path and follow whatever the symlink is at read time. rootReal also silently falls back to unevaluated root if EvalSymlinks(root) fails.",
+      "predicted": "A racing replace of an in-root path with an escaping symlink between check and read can load or hash out-of-root bytes despite PROJ_PATH_ESCAPE tests for static escapes.",
+      "fix_hint": "Open with O_NOFOLLOW (or re-EvalSymlinks+containment immediately before read) and fail closed if root cannot be realpath’d."
+    },
+    {
+      "id": "inspect-unevaluated-root",
+      "severity": "low",
+      "location": "internal/project/inspect.go:Inspect",
+      "bug": "Inspect calls resolveContainedPath(root, root, …) without EvalSymlinks(root), unlike resolveManifest; containment failures are swallowed and the module is still listed.",
+      "predicted": "Inspect and resolve disagree on symlink-root projects; escape attempts are soft-ignored in inspect instead of hard-failing with PROJ_PATH_ESCAPE.",
+      "fix_hint": "Reuse the same rootReal computation as resolve and surface containment errors instead of omitting fields."
+    }
+  ]
+}

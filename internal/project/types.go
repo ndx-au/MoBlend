@@ -64,6 +64,7 @@ type SourceRef struct {
 
 // SourceMap is emitted beside compile artifacts (not part of script/data identity).
 type SourceMap struct {
+	Entry   SourceRef            `json:"entry"`
 	Objects map[string]SourceRef `json:"objects"`
 	Lights  map[string]SourceRef `json:"lights"`
 	Tracks  []SourceRef          `json:"tracks"`
@@ -74,6 +75,7 @@ type Resolved struct {
 	Decl      spec.Declaration
 	SourceMap SourceMap
 	RootDir   string
-	Files     []string // project-relative paths loaded
-	Shot      string   // selected shot id when resolving a multi-shot project
+	Files     []string     // project-relative paths loaded
+	Digests   []FileDigest // immutable hashes captured at load time
+	Shot      string       // selected shot id when resolving a multi-shot project
 }

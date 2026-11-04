@@ -1,8 +1,8 @@
 # Implementation roadmap
 
-Status: Phases 0–6 executed; Linux amd64 `0.1.0-rc1` recorded in phase evidence. Phase 5 model-based authoring evaluation remains blocked; automated fixture results are not model repair-loop evidence. Additional platform support and public publication are not claimed. Phase 7 is the next implementation phase; Phase 8 follows it.
+Status: Phases 0–6 executed; Linux amd64 `0.1.0-rc1` recorded in phase evidence. Phase 5 model-based authoring evaluation remains blocked; automated fixture results are not model repair-loop evidence. Additional platform support and public publication are not claimed. Phases 7–8 are implemented. Open claims: Phase 5 model authoring gate, a stable release Blender baseline, non-Linux support, and public publication.
 
-Reader: an implementation agent continuing from the existing RC. Start with Phase 7's PLAN and CONTEXT; preserve the working single-file compiler and its verification history. The Phase 0–6 descriptions below remain the original baseline, not instructions to restart completed work. Phases are dependency gates, not calendar promises.
+Reader: an implementation agent continuing from the existing RC. Start with STATE and the latest repair verification; preserve the working single-file compiler and its verification history. The Phase 0–6 descriptions below remain the original baseline, not instructions to restart completed work. Phases are dependency gates, not calendar promises.
 
 Verification companion: [test and agent evaluation playbook](../docs/TEST-PLAYBOOK.md). Use its baseline cases now, module cases for Phase 7, and shot cases for Phase 8. Scenario definitions are not pass evidence.
 
@@ -124,4 +124,4 @@ Tasks:
 
 ## Sequencing discipline
 
-Executed baseline: 0 → 1 → 2 → 3 → 4 → 5 → 6, subject to recorded verification caveats. New implementation: 7 → 8. Preserve the existing RC and blocked model-evaluation claim while extending composition. Phase 7 adds a source-resolution layer over the working compiler; Phase 8 adds independent shot targets. Parameterized components and content-addressed build caching are deferred. Go, local/offline operation and no RAG remain fixed. Do not introduce MCP, a GUI, a provider abstraction, arbitrary code or retrieval infrastructure in these phases.
+Executed baseline: 0 → 1 → 2 → 3 → 4 → 5 → 6, subject to recorded verification caveats. Composition extension executed: 7 → 8. Preserve the existing RC and blocked model-evaluation claim during maintenance. Phase 7 adds a source-resolution layer over the working compiler; Phase 8 adds independent shot targets. Parameterized components and content-addressed build caching are deferred. Go, local/offline operation and no RAG remain fixed. Do not introduce MCP, a GUI, a provider abstraction, arbitrary code or retrieval infrastructure in these phases.

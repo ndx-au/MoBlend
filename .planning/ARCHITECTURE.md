@@ -50,13 +50,13 @@ Use Go structs for the normalized representation and typed operations for genera
 
 Use `os/exec` with cancellation and a timeout. Phase 0 must verify the exact command-line options and ordering against the chosen Blender build, including background operation, startup isolation, disabling auto-execution of embedded scripts, and nonzero exit on Python failure. Disabling auto-execution must not prevent the explicitly supplied trusted entry script from running.
 
-Run each job in a unique private directory with an unmodified pack, explicit environment/configuration, bounded logs, and a completion manifest. Do not reuse mutable global Blender state. Refuse a nonempty destination unless an explicit overwrite mode is requested; restrict any replacement to tool-owned artifacts. Never delete an arbitrary destination tree. Failed runs retain useful diagnostics and are never marked complete. Cancellation terminates the child process tree using tested platform behavior.
+Run each job in a unique private directory with an unmodified pack, explicit environment/configuration, bounded logs, and a completion manifest. Do not reuse mutable global Blender state. Treat --out as a parent and allocate a unique private job directory for compile/preview/render, nesting selected shots under their validated IDs. Existing artifacts are never replaced. Never delete an arbitrary destination tree. Failed runs retain useful diagnostics and are never marked complete. Cancellation terminates the child process tree using tested platform behavior.
 
 This is execution hygiene, not a hostile-code sandbox. V1 only loads its own trusted pack and generated code. A future custom asset/plugin feature needs a separate trust design.
 
 ## Proposed CLI surface
 
-The following surface was the baseline design for Phases 0–6; consult current CLI help and phase evidence for implemented behavior. Project/shot extensions below remain planned:
+The following surface was the baseline design for Phases 0–6; consult current CLI help and phase evidence for implemented behavior. Project/shot extensions below are implemented:
 
 ```text
 blendctl doctor --blender /path/to/blender
@@ -82,7 +82,7 @@ Diagnostics include stable code, stage, JSON pointer, message, and remediation h
 
 Reference render aesthetic approval is separate from structural correctness. Preserve a contact sheet and require a named visual review result. Consult the [Blender command-line manual](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html) and version-matched Python API during Phase 0; the linked manual was not retrievable during preparation of this kit.
 
-## Approved extension: module resolver (Phase 7, not implemented)
+## Approved extension: module resolver (Phase 7, implemented)
 
 The current implementation compiles a validated `spec.Declaration`; add a file-aware project resolver before that boundary, not another Blender backend. Keep raw single-file entry points compatible. Proposed flow:
 
@@ -92,14 +92,14 @@ The manifest has its own version and explicit entry/module dependencies. The exi
 
 The phase CONTEXT defines logical namespaces and explicit import aliases. Qualify IDs deterministically and rewrite references through typed fields, not recursive string replacement. Reject ambiguity and cycles; no last-writer-wins merging, implicit overrides, templating, expressions, remote imports or wildcard scans. Import order may not determine scene meaning. Keep intentionally ordered lists (for example keyframes) ordered; canonicalize only unordered module/entity collections.
 
-Resolve paths relative to the declaring file under the manifest directory. Normalize paths, resolve symlinks and reject escape from that root. Read bounded input snapshots once per job so validation and compilation use the same bytes. Bound modules, depth and total bytes; scene limits apply after assembly. JSON imports are declarations, not permission to load arbitrary Blender assets or execute files.
+Resolve paths relative to the declaring file under the manifest directory. Normalize paths, resolve symlinks and reject escape from that root. Read bounded module input snapshots once per job so validation, compilation and provenance use the same bytes. Snapshot hashes are per-file; they do not promise an atomic filesystem-wide transaction. Bound modules, depth and total bytes; scene limits apply after assembly. JSON imports are declarations, not permission to load arbitrary Blender assets or execute files.
 
 Carry source file and original JSON pointer for each declaration field/entity through reference rewriting and validator errors. Source filenames are project-relative. Existing diagnostic fields stay compatible; source context is additive. Source maps and provenance live in separate artifacts so absolute checkout paths never alter generated script/data. Existing duplicate-ID and reference validation still applies after assembly.
 
-## Approved extension: independent shots (Phase 8, not implemented)
+## Approved extension: independent shots (Phase 8, implemented)
 
-A project may declare multiple shot IDs, each with a scene entry and explicit module dependencies. A selected build resolves that shot's transitive dependency closure into one declaration and uses the current fresh-process rendering model. The loader validates the outer manifest for every command, but only selected-shot contents for a selected-shot build. An explicit project-wide validation traverses every shot.
+A project may declare multiple shot IDs, each with a scene entry and explicit module dependencies. A selected build resolves that shot's transitive dependency closure into one declaration and uses the current fresh-process rendering model. The loader validates the outer manifest for every command, but only selected-shot contents for a selected-shot build. An explicit project-wide validation traverses every shot and checks every listed dependency graph, including unreachable modules. Non-shot projects also check the complete listed graph.
 
-Outputs and manifests are isolated per shot. Record content hashes for the resolved input snapshot, dependency graph and tool/resource versions; do not implement cache reuse until invalidation semantics have been designed and tested. A shared module is immutable input during a run. Changing it requires rebuilding dependent shots but does not justify silently rerendering every shot.
+Outputs and manifests are isolated per shot. Record content hashes for the resolved input snapshot, dependency graph and tool/resource versions; do not implement cache reuse until invalidation semantics have been designed and tested. Loaded module bytes are immutable inputs during a run. Changing it requires rebuilding dependent shots but does not justify silently rerendering every shot.
 
 No multi-scene Blender runtime, NLE timeline assembly or distributed scheduler is implied. Parameterized component instantiation will require a later separate contract for types, defaults, bounds and reference binding.

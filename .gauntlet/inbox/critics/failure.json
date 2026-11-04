@@ -1,0 +1,30 @@
+{
+  "persona": "failure",
+  "plan_hash": "364610b4ffb66c54d77b3b58ae284459227c60c11e029b5c8a35269bc31a2856",
+  "findings": [
+    {
+      "id": "doctor-cancel-pipe-hang",
+      "severity": "medium",
+      "location": "internal/runner/doctor.go:45-48 (Doctor), called by internal/runner/apply.go:98",
+      "bug": "Run now kills its process group and bounds pipe waiting, but the preceding --version probe uses a separate exec.CommandContext with neither configureProcessTree nor WaitDelay. A descendant retaining stdout/stderr keeps CombinedOutput blocked after cancellation or the nominal 15-second probe timeout. Bounded reproduction against the current built CLI: configure MOBLEND_BLENDER to a wrapper whose --version starts sleep 60 and waits, start preview, send SIGTERM after the child is ready. The CLI remained blocked after one second and the child was still alive; manually killing that child allowed cancellation and the failed marker to finish. The existing Run/CLI cancellation tests passed but exercise a fast --version branch.",
+      "predicted": "A hung version wrapper/helper prevents preview/render cancellation from returning and delays or prevents the terminal failed marker, despite the repaired render-process cancellation path.",
+      "fix_hint": "Apply the tested process-group cancellation and bounded pipe-wait setup to Doctor too, and add a cancellation/timeout regression with a --version descendant holding the pipes."
+    },
+    {
+      "id": "preview-empty-marked-complete",
+      "severity": "medium",
+      "location": "internal/runner/apply.go:136-139 (RunApply preview output verification)",
+      "bug": "The repaired render path checks expected frames are regular and nonempty, while preview still accepts any existing preview.png via os.Stat. A zero-byte file or directory passes. In a bounded current-CLI failure injection, a fake supported-version Blender exited zero after writing a nonempty scene.blend and an empty preview.png; preview exited zero and wrote manifest.json with status complete. This is an output-failure injection, not a claim that the real Blender baseline produced an empty image.",
+      "predicted": "A missing-content preview can be certified complete, violating the Phase 4 gate that incomplete output cannot be mistaken for finished output.",
+      "fix_hint": "Require a regular nonempty preview PNG and validate its PNG header/dimensions before writing success; cover empty, directory and truncated preview outputs with failed-marker regressions."
+    },
+    {
+      "id": "logs-still-unbounded",
+      "severity": "medium",
+      "location": "internal/runner/runner.go:Run CombinedOutput and error construction; internal/runner/doctor.go:Doctor CombinedOutput",
+      "bug": "Phase 4 explicitly requires bounded logs, but both process paths still accumulate all stdout/stderr with CombinedOutput. Run copies the accumulated output into Result and its returned error, and RunApply serializes the full error into the failed marker. A bounded fake-Blender probe emitting 4 MiB then exiting 1 produced a 4,194,402-byte failed marker and 4,194,344-byte CLI stderr without truncation. The repair evidence acknowledges this gap, but it remains implemented behavior.",
+      "predicted": "A noisy or failing Blender process can exhaust parent memory before its timeout and duplicate unbounded output into diagnostics and disk; an OOM-killed CLI cannot finish cancellation or record a terminal failed marker.",
+      "fix_hint": "Replace CombinedOutput with a capped draining collector shared by execution and version probes, retain a bounded diagnostic tail with an explicit truncation marker, and test output beyond the cap."
+    }
+  ]
+}

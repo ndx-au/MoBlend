@@ -23,15 +23,16 @@ type Options struct {
 	ExtraArgs []string // passed after "--"
 	WorkDir   string
 	Timeout   time.Duration
-	Env       []string // if nil, inherits process env
+	Env       []string // optional explicit environment; default is an isolated allowlist
 }
 
 // Result captures process outcome.
 type Result struct {
-	ExitCode int
-	Stdout   string
-	Stderr   string
-	Args     []string
+	LogTruncated bool
+	ExitCode     int
+	Stdout       string
+	Stderr       string
+	Args         []string
 }
 
 // BuildArgs returns the ordered Blender argv (without the executable).
@@ -57,7 +58,7 @@ func BuildArgs(opt Options) []string {
 }
 
 // Run executes Blender with opt. Context cancellation kills the process tree
-// via CommandContext.
+// using a dedicated process group on Linux/macOS.
 func Run(ctx context.Context, opt Options) (Result, error) {
 	if opt.Blender == "" {
 		return Result{}, errors.New("blender executable path is required")
@@ -68,35 +69,45 @@ func Run(ctx context.Context, opt Options) (Result, error) {
 		defer cancel()
 	}
 
-	args := BuildArgs(opt)
-	cmd := exec.CommandContext(ctx, opt.Blender, args...)
-	if opt.WorkDir != "" {
-		cmd.Dir = opt.WorkDir
-	}
-	if opt.Env != nil {
-		cmd.Env = opt.Env
-	}
+	return runCommand(ctx, opt.Blender, BuildArgs(opt), opt.WorkDir, opt.Env)
+}
 
-	out, err := cmd.CombinedOutput()
-	res := Result{
-		Args:   append([]string{opt.Blender}, args...),
-		Stdout: string(out),
-		Stderr: "",
+// runCommand is the common process/environment/log boundary for version probes
+// and execution. Both must have identical cancellation behavior.
+func runCommand(ctx context.Context, blender string, args []string, workDir string, env []string) (Result, error) {
+	cmd := exec.CommandContext(ctx, blender, args...)
+	cmd.Dir = workDir
+	configureProcessTree(cmd)
+	cmd.WaitDelay = 2 * time.Second
+	cmd.Env = env
+	if cmd.Env == nil {
+		envDir, err := os.MkdirTemp(workDir, "moblend-env-*")
+		if err != nil {
+			return Result{}, fmt.Errorf("create isolated environment: %w", err)
+		}
+		defer os.RemoveAll(envDir)
+		cmd.Env = isolatedEnv(envDir)
+	}
+	logs := &boundedLog{}
+	cmd.Stdout = logs
+	cmd.Stderr = logs
+	err := cmd.Run()
+	out, truncated := logs.snapshot()
+	res := Result{Args: append([]string{blender}, args...), Stdout: out, LogTruncated: truncated}
+	if ctx.Err() != nil {
+		res.ExitCode = -1
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			return res, fmt.Errorf("blender timed out: %w\n%s", ctx.Err(), out)
+		}
+		return res, fmt.Errorf("blender canceled: %w\n%s", ctx.Err(), out)
 	}
 	if err == nil {
-		res.ExitCode = 0
 		return res, nil
 	}
 	var ee *exec.ExitError
 	if errors.As(err, &ee) {
 		res.ExitCode = ee.ExitCode()
 		return res, fmt.Errorf("blender exit %d: %w\n%s", res.ExitCode, err, out)
-	}
-	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-		return res, fmt.Errorf("blender timed out: %w\n%s", ctx.Err(), out)
-	}
-	if errors.Is(ctx.Err(), context.Canceled) {
-		return res, fmt.Errorf("blender canceled: %w\n%s", ctx.Err(), out)
 	}
 	return res, fmt.Errorf("blender run failed: %w\n%s", err, out)
 }
@@ -130,4 +141,18 @@ func MustAbs(path string) string {
 		panic(err)
 	}
 	return a
+}
+
+func isolatedEnv(dir string) []string {
+	env := []string{}
+	for _, key := range []string{"PATH", "LANG", "LC_ALL", "SYSTEMROOT", "WINDIR"} {
+		if v, ok := os.LookupEnv(key); ok {
+			env = append(env, key+"="+v)
+		}
+	}
+	for _, key := range []string{"HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "TMPDIR"} {
+		env = append(env, key+"="+dir)
+	}
+	// Do not inherit Python startup paths, credentials, or Blender user scripts.
+	return env
 }

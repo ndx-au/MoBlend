@@ -1,0 +1,46 @@
+{
+  "persona": "tests",
+  "plan_hash": "364610b4ffb66c54d77b3b58ae284459227c60c11e029b5c8a35269bc31a2856",
+  "findings": [
+    {
+      "id": "import-permutation-test-noop",
+      "severity": "medium",
+      "location": "internal/project/resolve_test.go:TestDeterminismImportReorderAndRelocate",
+      "bug": "The test credited with import-order determinism rewrites the one-element imports array to the same title import. It tests relocation/key serialization, but never changes import order; MOD-03 and the Phase 7 gate explicitly require this permutation.",
+      "predicted": "An import-order-dependent resolver can pass this test and the current paired fixture checks.",
+      "fix_hint": "Use a valid graph with at least two imports and cross-module animation references, reverse imports and manifest module order, and assert identical normalized data/script bytes."
+    },
+    {
+      "id": "source-original-pointer-unasserted",
+      "severity": "medium",
+      "location": "internal/project/resolve_test.go:TestSourceAwareDiagnostic; MOD-04",
+      "bug": "The sole source-aware diagnostic test asserts only the source filename. Its invalid object is at index zero in both its module and the assembled declaration, and it never checks Code or Pointer; no project test asserts original pointers after sorting/reindexing.",
+      "predicted": "A regression returning an assembled index or dropping the original pointer will stay green while agents are directed to the wrong field in an owned module.",
+      "fix_hint": "Add nested object and animation failures whose original indexes differ from assembled indexes, asserting exact code, relative source file and original source pointer in the resolver and CLI JSON result."
+    },
+    {
+      "id": "mixed-animation-channels-unprobed",
+      "severity": "medium",
+      "location": "internal/runner/phase3_integration_test.go; internal/resources/templates/apply_scene.py:apply_animation",
+      "bug": "Blender interpolation probes cover isolated location tracks and a rotation endpoint; none combines different interpolation modes on one object or samples animated material sockets. These exercise different action owners and curve-selection paths in apply_animation, so single-property probes do not cover the supported animation contract.",
+      "predicted": "Interpolation can leak between transform properties or remain at Blender defaults for material curves without failing current regression tests.",
+      "fix_hint": "Add a reopened Blender probe with step location plus linear rotation on one object and step/linear material tracks; assert interior samples independently and repeat with track order reversed."
+    },
+    {
+      "id": "s04-failed-shot-missing",
+      "severity": "medium",
+      "location": "internal/runner/project_integration_test.go:TestConcurrentShotPreviewsIsolated; docs/TEST-PLAYBOOK.md:S04",
+      "bug": "The concurrent shot integration still runs only three successful previews and checks artifact existence/distinct job directories. Separate timeout/failure tests do not exercise the required concurrent successful/failed-shot matrix or assert manifest shot attribution. The repair verification correctly acknowledges this remaining gap.",
+      "predicted": "Failure attribution or sibling-output contamination during concurrent shot jobs can regress while all current concurrency and standalone-failure tests pass.",
+      "fix_hint": "Run concurrent jobs with one deliberately failing shot and assert each successful manifest/dependency manifest has its expected shot ID, while only the failed job has a failed marker and no complete manifest."
+    },
+    {
+      "id": "ease-inout-probe-gap",
+      "severity": "low",
+      "location": "internal/runner/phase3_integration_test.go; .planning/REQUIREMENTS.md:SCENE-02",
+      "bug": "SCENE-02 still credits easing at intermediate frames, but there is no dedicated Blender interior-sample assertion for ease_in_out. Existing step/linear samples and rotation endpoint checks cannot distinguish an eased curve from linear interpolation. The repair verification leaves this probe open.",
+      "predicted": "An incorrect easing mapping can pass the suite despite the recorded SCENE-02 acceptance claim.",
+      "fix_hint": "Add a pinned-Blender easing fixture and probe asymmetric interior frames against the documented easing tolerance, in addition to its endpoints."
+    }
+  ]
+}

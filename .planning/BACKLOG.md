@@ -13,4 +13,4 @@
 - Parameterized reusable components: typed inputs/defaults/bounds and deterministic instance expansion after Phase 7/8; no arbitrary expressions or programming language.
 - Content-addressed per-shot build cache with tested invalidation; Phase 8 records dependencies but does not reuse cached renders.
 
-Explicit local file composition and independent shot selection have moved into roadmap Phases 7 and 8. They are no longer deferred ideas; implementation and acceptance evidence are pending.
+Explicit local file composition and independent shot selection shipped in Phases 7–8. Parameterized modules and build caching remain deferred.

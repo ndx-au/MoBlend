@@ -36,3 +36,13 @@ go run ./cmd/blendctl guide | head
 - LLM authoring evaluation remains blocked / not claimed.
 - macOS/Windows not claimed.
 - Pixel identity across GPUs/OS/Blender builds is not promised; equivalence is compile bytes + successful preview artifacts under pinned Linux amd64 Blender 5.3.
+
+
+## 2026-11-05 Gauntlet repair addendum
+
+MOD-02 graph limits/orphans now have exact-code negative tests. MOD-06 equivalence now compares reopened Blender object/camera/material/scene state and decoded nonempty PNG pixels, rather than artifact existence alone. See [repair verification](../../fixes/gauntlet-round-1/VERIFICATION.md) for exact commands, fresh results, and remaining medium/low gaps. Full suite: `go test ./... -count=1 -timeout 10m` passed 103 tests/subtests with real Blender; project/CLI race checks passed 42. Historical evidence above describes the earlier implementation.
+
+
+## Follow-up fixes — 2026-11-05
+
+Alias identity/uniqueness, camera animation references, module-only contracts, original source pointers and real import permutation regressions pass. Full Go/Blender suite: 134 tests/subtests passed; scoped race suite: 40 passed. See [follow-up verification](../../fixes/gauntlet-followup/VERIFICATION.md) for commands, complete finding mapping and remaining release/evaluation caveats.

@@ -1,0 +1,15 @@
+{
+  "plan_hash": "364610b4ffb66c54d77b3b58ae284459227c60c11e029b5c8a35269bc31a2856",
+  "round": 1,
+  "verdict": "revise",
+  "stub": false,
+  "cwd": "/home/terence/code/MoBlend",
+  "coverage": {
+    "correctness": 40,
+    "tests": 19,
+    "failure": 12,
+    "concurrency": 8,
+    "security": 8
+  },
+  "created_at": "2026-11-04T18:09:20.945Z"
+}
