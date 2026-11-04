@@ -1,32 +1,85 @@
 # MoBlend
-A transpiler for agent-generated declarative JSON to be processed into Blender's python API.
 
-A planning kit for an agent-friendly motion graphics tool. Working CLI name: `blendctl` (provisional; check naming before publication).
+Declarative motion graphics for Blender, aimed at coding agents.
 
-**Status: Phases 0–6 complete for Linux amd64 RC `0.1.0-rc1`.** Dot Progress in `.progress/`; plans in `.planning/`.
+You (or an agent) write a small versioned **JSON** scene. **`blendctl`** (Go) validates it, compiles deterministic Blender Python against a **bundled asset pack**, and produces an editable `.blend`, PNG frames, and a completion manifest. No RAG, no hosted model, no separate Python install for users.
+
+**Status:** Linux amd64 release candidate `0.1.0-rc1` (roadmap phases 0–6). Blender **5.3** family required. macOS/Windows not verified yet.
+
+## Quick start
 
 ```bash
+# Prerequisites: Go 1.25+, Blender 5.3 on PATH (or MOBLEND_BLENDER=/path/to/blender)
+
 go test ./...
-VERSION=0.1.0-rc1 scripts/release-linux-amd64.sh
-./dist/linux-amd64/blendctl doctor
-./dist/linux-amd64/blendctl preview testdata/compile/title_small.json --frame 24 --out /tmp/moblend-preview
+go run ./cmd/blendctl doctor
+go run ./cmd/blendctl preview testdata/compile/title_small.json --frame 24 --out /tmp/moblend-out
 ```
 
-Requires Blender 5.3 on `PATH` or `MOBLEND_BLENDER`. See `docs/QUICKSTART.md`. LLM/visual review evidence is explicitly blocked — do not claim them without review.
+Open `/tmp/moblend-out/moblend-job-*/out/preview.png` and `scene.blend`.
 
-## Product in one sentence
+Release binary:
 
-Agents describe motion graphics in a small, versioned JSON format; a Go compiler converts that description into deterministic Blender Python, applies it to bundled assets, and produces an editable scene and rendered frames.
+```bash
+VERSION=0.1.0-rc1 scripts/release-linux-amd64.sh
+./dist/linux-amd64/blendctl doctor
+```
 
-## Read order
+## CLI
 
-1. `AGENTS.md` — execution rules.
-2. `.planning/PROJECT.md` — scope and decisions.
-3. `.planning/ARCHITECTURE.md` — contracts and semantics.
-4. `.planning/REQUIREMENTS.md` — acceptance criteria.
-5. `.planning/ROADMAP.md` — ordered implementation slices.
-6. `.planning/STATE.md` — current handoff.
+| Command | Purpose |
+|---|---|
+| `doctor` | Check Blender path/version |
+| `guide` | Print the local agent guide |
+| `schema` | Print JSON Schema v1 |
+| `assets list` / `assets describe <id>` | Exact-ID catalogue |
+| `validate <scene.json> [--json]` | Strict parse + semantic checks (no Blender) |
+| `compile <scene.json> --out DIR` | Emit trusted script + canonical data (no Blender) |
+| `preview <scene.json> [--frame N] [--out DIR]` | One frame + `.blend` + `manifest.json` |
+| `render <scene.json> [--out DIR]` | Full frame range under `frames/` |
+| `smoke` | Pack/runner boundary smoke |
 
-V1 needs an installed, supported Blender executable. Users do not need a separate Python installation, Go toolchain, Node runtime, vector database, model account, or hosted service. Development requires Go and Blender. The tool does not provide its own natural-language model; an existing coding agent authors the JSON.
+Set `MOBLEND_BLENDER` if Blender is not on `PATH`.
 
-Primary outputs are an editable `.blend`, PNG frames, and a machine-readable manifest. Video encoding, MCP, and broader Blender capabilities are later extensions.
+## Examples
+
+| File | Composition |
+|---|---|
+| `examples/title.json` | Text title reveal |
+| `examples/pedestal.json` | Cylinder plinth + `base_cube` product |
+| `examples/chart.json` | `column_chart` Geometry Nodes bars |
+
+Catalogue assets: `base_cube`, `column_chart`. Schema `1.0.0`, asset pack `0.1.0`.
+
+Agents should start with `blendctl guide` (also `agent/GUIDE.md`). Use exact asset IDs only; repair from `validate --json` diagnostics.
+
+## What v1 does not do
+
+Arbitrary Python/`bpy`, user `.blend` import, RAG/fuzzy search, physics/rigs/custom node graphs, video/FFmpeg, MCP, or a GUI. See `docs/LIMITATIONS.md`.
+
+## Development
+
+```bash
+scripts/check.sh                          # gofmt, vet, unit tests
+go test ./internal/runner -count=1        # Blender integration (needs Blender)
+scripts/build-base-pack.sh                # regenerate pack base
+scripts/build-column-chart.sh             # add/update column chart GN
+scripts/make-contact-sheet.sh             # title/pedestal/chart contact sheet
+```
+
+Layout: `cmd/blendctl`, `internal/{spec,validate,compile,runner,resources}`, embedded pack/fonts/schema under `internal/resources/`.
+
+## Docs and project history
+
+| Doc | Role |
+|---|---|
+| `docs/QUICKSTART.md` | First render |
+| `docs/TROUBLESHOOTING.md` | Common failures |
+| `docs/LIMITATIONS.md` | Compatibility boundaries |
+| `AGENTS.md` | Agent execution rules |
+| `.planning/` | Roadmap, phase plans, verification |
+| `.progress/` | Append-only Dot Progress log |
+
+## License notes
+
+Bundled DejaVu Sans: see `internal/resources/fonts/DejaVuSans.LICENSE`. Public release publication still requires owner authorization.
