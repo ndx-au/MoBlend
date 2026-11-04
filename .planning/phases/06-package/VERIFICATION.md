@@ -32,3 +32,13 @@ go test ./... -count=1 -timeout 20m
 | Docs (quick start, limitations, troubleshooting) | PASS under `docs/` |
 | macOS/Windows evidence | **not claimed** |
 | Public GitHub release upload | **not done** (needs owner authorization) |
+
+
+## Native archive follow-up — 2026-11-05
+
+Extended the existing script to emit versioned native tar.gz packages, SHA256SUMS, guide/examples/docs/notices and build/runtime metadata. Snapshot and clean annotated-tag modes are separate; --verify-render is explicit. No Node dependency or automatic publication added. Disposable tagged-build tests prove repeatability, extraction and version/dirty/tag/output rejection; a real extracted-binary Blender preview completed. Full Go/Blender suite: 134 tests/subtests passed; fmt/vet clean. Exact commands and caveats: [packaging verification](../../fixes/release-packaging/VERIFICATION.md). Recommended current product maturity is alpha; historic RC evidence above is preserved, not promoted to product-stability evidence.
+
+
+## Alpha.1 source qualification — 2026-11-05
+
+Owner authorized the alpha.1 GitHub prerelease in the existing private repository. Fresh full Go/Blender suite passed 134 tests/subtests; fmt/vet/Bash syntax and executed packaging acceptance passed. Pending immutable-tag package and draft-download checks are tracked in [release verification](../../releases/0.2.0-alpha.1/VERIFICATION.md). Earlier statements about publication authorization describe earlier sessions, not a current blocker.

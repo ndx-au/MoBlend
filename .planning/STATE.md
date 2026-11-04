@@ -2,8 +2,8 @@
 
 Updated: 2026-11-05
 Status: Roadmap phases 0–8 CLI/composition work executed on Linux amd64. Phase 5 proposed model repair-loop gate remains unmet/blocked; fixture smoke and visual review are not model-authoring evidence. RC `0.1.0-rc1` baseline retained; modularity (Phase 7) and independent shots (Phase 8) implemented with evidence.
-Active phase: none. Follow-up Gauntlet fixes verified with 134 tests/subtests and pinned Blender; see `.planning/fixes/gauntlet-followup/VERIFICATION.md`. The last independent verdict predates these fixes and remains historical.
-Next action: choose the no-Node release packaging path and qualify a stable Blender release. Model evaluation, HD review and non-Linux support remain separate evidence gaps. No release publication performed.
+Active work: authorized v0.2.0-alpha.1 release. Follow-up fixes and native packaging verified; publication gates recorded in `.planning/releases/0.2.0-alpha.1/VERIFICATION.md`. The last independent Gauntlet verdict predates the fixes and remains historical.
+Next action: build/verify the clean annotated-tag package and publish the authorized GitHub prerelease, preserving private repository visibility. Model evaluation, HD review and non-Linux support remain separate evidence gaps. Release v0.2.0-alpha.1 publication is now authorized and being prepared.
 
 
 ## Completed
@@ -20,7 +20,7 @@ Roadmap phases 0–8 implementation (see phase VERIFICATION files; Phase 5 propo
 | Independent shots (`SHOT-01`–`03`) | met — Phase 8 VERIFICATION |
 | LLM authoring eval | still blocked / not claimed |
 | macOS/Windows | not claimed |
-| Public publish | needs owner authorization |
+| GitHub alpha prerelease | owner authorized 2026-11-05; preparation in progress; repository stays private |
 
 ## Modularity decision — 2026-11-04
 
@@ -43,3 +43,13 @@ All five critics refreshed and judge compose succeeded. Full details: `.planning
 Repaired all four high and actionable medium/low fresh-superplan tasks: deterministic explicit aliases, camera references, original diagnostics, module contracts, mixed transform/material interpolation, real easing samples, bounded regular snapshot reads, version-probe cancellation, bounded logs, decoded PNG validation and concurrent failed-shot attribution. Exact finding-to-test map: `.planning/fixes/gauntlet-followup/VERIFICATION.md`.
 
 Final checks: `gofmt -l .` empty; `go vet ./...` exit 0; `go test ./... -count=1 -timeout 10m` passed **134 tests/subtests across 8 packages**, with real Blender; targeted race suite passed **40 across 3 packages**; `git diff --check` clean; guide copies match. Current Linux Go/shell release build produced a **4,120,760-byte static executable** and its minimal-environment preview completed. No Node build/runtime dependency added. Commit/push authorized by the owner; release tagging/publication not requested. Dot Progress: `F000002.gauntlet-followup-fixes.md`.
+
+## Native archive packaging — 2026-11-05
+
+Implemented Go/Bash-only versioned archives/checksums with explicit snapshot and clean annotated-tag build modes; tags/releases are never published by the script. Included docs/examples/notices/build provenance; real extracted-binary render succeeded. Packaging acceptance proves repeated archive byte equality, checksums, extraction and negative tag/dirty/version/output guards. Bash syntax, Go formatting/vet and 134 Go/Blender tests passed. See `.planning/fixes/release-packaging/VERIFICATION.md` for exact commands and missing ShellCheck/other qualification evidence.
+
+Recommended current maturity: alpha; suggested next public version `v0.2.0-alpha.1`, preserving historic `0.1.0-rc1`. This is release-strategy advice, not an actual version/tag/publication change. Progress: `M006.002.native-release-archives.md`.
+
+## Alpha.1 release preparation — 2026-11-05
+
+Owner authorized v0.2.0-alpha.1. Finalize pending native packaging/docs in a clean source commit, run fresh qualification, annotate the tag, build with --release --verify-render, verify extracted package, then publish a GitHub prerelease with tar.gz/SHA256SUMS. Repository is private and its visibility will be preserved. No stable/platform/model/HD claims or new project license are added. Plan/context: `.planning/releases/0.2.0-alpha.1/`.

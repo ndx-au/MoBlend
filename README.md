@@ -1,14 +1,25 @@
 # MoBlend
 
-Declarative motion graphics for Blender, aimed at coding agents.
+Declarative motion graphics for Blender, designed to reduce token overhead for coding agents.
 
 You (or an agent) write a small versioned **JSON** scene. **`blendctl`** (Go) validates it, compiles deterministic Blender Python against a **bundled asset pack**, and produces an editable `.blend`, PNG frames, and a completion manifest. No RAG, no hosted model, no separate Python install for users.
 
-**Status:** Linux amd64 release candidate `0.1.0-rc1` (roadmap phases 0–8). Blender **5.3** family required. macOS/Windows not verified yet. Multi-file projects and independent shots are supported on top of single-file scenes.
+**Status:** Linux amd64 **alpha**, `v0.2.0-alpha.1` (roadmap phases 0–8 implemented; qualification caveats remain). Blender **5.3** family required. macOS/Windows not verified yet. Multi-file projects and independent shots are supported on top of single-file scenes.
 
-## Why a declarative interface
+## Why this can reduce token cost
 
-MoBlend separates an agent's scene decisions from the Blender operations that implement them. The hypothesis is that explicit, validated declarations can reduce hidden-state and sequencing errors while making revisions easier to inspect. [Declarative interfaces for LLMs and the design of MoBlend](docs/DECLARATIVE-INTERFACES-FOR-LLMS.md) develops the argument, its limits and how to evaluate it.
+When a model drives Blender through generated Python or sequences of low-level tool calls, it can spend tokens on API setup, context management, repeated implementation code and debugging. MoBlend moves supported implementation work into a reusable compiler and asset pack. The agent authors a compact scene declaration; local software supplies the Blender execution code without another model generation step.
+
+The intended savings come from several parts of the authoring loop:
+
+- **Less generated implementation code:** declare supported objects, properties and animation tracks while the compiler handles their Blender bindings.
+- **Focused context:** read the relevant schema, asset controls, modules and shot dependencies as needed.
+- **Targeted repairs:** structured validation errors identify the source file and field to fix before a render is attempted.
+- **Smaller revisions:** edit an owned module or selected shot while preserving the rest of the production.
+
+These choices aim to reduce total model token usage across authoring and repair, not merely the size of the first response. Guides, schemas, tool feedback and image inspection still contribute to context and cost. Actual savings depend on the model, harness, task and comparison workflow; a controlled token-cost benchmark has not yet established the size of the benefit.
+
+The same explicit, validated declarations can reduce hidden-state and sequencing errors while making revisions easier to inspect. [Declarative interfaces for LLMs and the design of MoBlend](docs/DECLARATIVE-INTERFACES-FOR-LLMS.md) develops the argument, its limits and how to evaluate it.
 
 ## Quick start
 
@@ -100,3 +111,5 @@ Layout: `cmd/blendctl`, `internal/{spec,validate,compile,project,runner,resource
 Bundled DejaVu Sans: see `internal/resources/fonts/DejaVuSans.LICENSE`. Public release publication still requires owner authorization.
 
 Output safety: `--out` is a parent directory. Compile, preview and render create a fresh `moblend-job-*` directory, nested under the selected shot ID for projects with shots. Compile prints its actual paths. Only a `manifest.json` marked `complete` proves render success; partial PNGs and `.blend` files can remain after a failure. Job artifacts remain until manually removed.
+
+Native packaging and version/maturity policy: [release strategy](docs/RELEASING.md). The package builder uses Go and shell tools, creates archives/checksums, and never publishes automatically.

@@ -3,8 +3,10 @@
 ## Prerequisites
 
 1. Blender **5.3** family on `PATH`, or set `MOBLEND_BLENDER` to the binary  
-   (see `.planning/DEVELOPMENT-ENVIRONMENT.md` for the local beta pin).
-2. The `blendctl` binary from a release build (`scripts/release-linux-amd64.sh`) or `go run ./cmd/blendctl`.
+   (`BUILD-INFO.txt` in the package records the tested beta build; source
+   checkouts also have `.planning/DEVELOPMENT-ENVIRONMENT.md`).
+2. Extract the native release archive and put `blendctl` on PATH, or use
+   `./blendctl` from its package directory. Go is needed only for source builds.
 
 No separate Python, Node, model key, or network is required for ordinary use.
 
@@ -27,3 +29,14 @@ blendctl assets describe column_chart
 ```
 
 Write JSON using exact asset IDs only. Repair from `validate --json` diagnostics.
+
+## Build a package from source
+
+```bash
+scripts/release-linux-amd64.sh --verify-render
+```
+
+This creates a labelled snapshot under `dist/releases/`, with a versioned tar.gz,
+SHA256SUMS and an unpacked package. The script needs Go/Bash and standard Linux
+archive tools; no Node/npm. It never tags or publishes. See [release strategy](RELEASING.md)
+for clean annotated-tag builds, maturity gates and publication steps.
