@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "asset_pack_version": "0.1.0",
+  "scene": {
+    "frame_start": 1,
+    "frame_end": 2,
+    "fps": 24,
+    "resolution": [32, 32],
+    "samples": 2,
+    "world_color": "#101018"
+  },
+  "camera": {
+    "id": "cam",
+    "location": [0, -4.5, 1.2],
+    "rotation_euler_deg": [80, 0, 0]
+  },
+  "lights": [
+    {
+      "id": "key",
+      "type": "AREA",
+      "location": [2, -2, 3],
+      "energy": 250,
+      "size": 2
+    }
+  ],
+  "objects": [
+    {
+      "id": "title",
+      "type": "text",
+      "text": "Hi",
+      "location": [0, 0, 1],
+      "material": { "base_color": "#F2F2F2", "roughness": 0.35 }
+    }
+  ]
+}

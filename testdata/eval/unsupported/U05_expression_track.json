@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "asset_pack_version": "0.1.0",
+  "scene": {
+    "frame_start": 1,
+    "frame_end": 24,
+    "fps": 24,
+    "resolution": [
+      64,
+      64
+    ],
+    "samples": 4,
+    "world_color": "#101018"
+  },
+  "camera": {
+    "id": "cam",
+    "location": [
+      0,
+      -4.5,
+      1.2
+    ],
+    "rotation_euler_deg": [
+      80,
+      0,
+      0
+    ],
+    "focal_length_mm": 50
+  },
+  "lights": [
+    {
+      "id": "key",
+      "type": "AREA",
+      "location": [
+        2,
+        -2,
+        3
+      ],
+      "energy": 250,
+      "color": "#FFF5E6",
+      "size": 2
+    }
+  ],
+  "objects": [
+    {
+      "id": "title",
+      "type": "text",
+      "text": "MoBlend",
+      "location": [
+        0,
+        0,
+        1
+      ],
+      "material": {
+        "base_color": "#F2F2F2",
+        "roughness": 0.35
+      }
+    }
+  ],
+  "animation": [
+    {
+      "target_id": "title",
+      "property": "location",
+      "keys": [
+        {
+          "frame": 1,
+          "value": [
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "expression": "sin(t)"
+    }
+  ]
+}

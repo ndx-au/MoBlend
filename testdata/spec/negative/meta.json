@@ -1,0 +1,22 @@
+{
+  "duplicate_key.json": {
+    "code": "SPEC_DUPLICATE_KEY",
+    "pointer": "/schema_version"
+  },
+  "unknown_field.json": {
+    "code": "SPEC_UNKNOWN_FIELD",
+    "pointer": ""
+  },
+  "bad_version.json": {
+    "code": "SPEC_SCHEMA_VERSION",
+    "pointer": "/schema_version"
+  },
+  "unknown_asset.json": {
+    "code": "CAT_UNKNOWN_ASSET",
+    "pointer": "/objects/0/asset_id"
+  },
+  "duplicate_id.json": {
+    "code": "SEM_DUPLICATE_ID",
+    "pointer": "/objects/0/id"
+  }
+}

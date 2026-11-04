@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0.0",
+  "asset_pack_version": "0.1.0",
+  "scene": {
+    "frame_start": 1,
+    "frame_end": 24,
+    "fps": 24,
+    "resolution": [
+      64,
+      64
+    ],
+    "samples": 4
+  },
+  "camera": {
+    "id": "cam",
+    "location": [
+      3,
+      -3,
+      2
+    ],
+    "rotation_euler_deg": [
+      65,
+      0,
+      45
+    ]
+  },
+  "lights": [
+    {
+      "id": "key",
+      "type": "AREA",
+      "location": [
+        2,
+        -1.5,
+        3
+      ],
+      "energy": 300,
+      "size": 2
+    }
+  ],
+  "objects": [
+    {
+      "id": "plinth",
+      "type": "form",
+      "form": "cylinder",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.2,
+        1.2,
+        0.2
+      ],
+      "material": {
+        "base_color": "#2C2C2C",
+        "roughness": 0.55
+      }
+    },
+    {
+      "id": "product",
+      "type": "asset",
+      "asset_id": "base_cube",
+      "location": [
+        0,
+        0,
+        0.7
+      ],
+      "material": {
+        "base_color": "#22AA66",
+        "roughness": 0.3
+      }
+    }
+  ],
+  "animation": [
+    {
+      "target_id": "product",
+      "property": "rotation_euler_deg",
+      "interpolation": "linear",
+      "keys": [
+        {
+          "frame": 1,
+          "value": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "frame": 24,
+          "value": [
+            0,
+            0,
+            90
+          ]
+        }
+      ]
+    }
+  ]
+}
