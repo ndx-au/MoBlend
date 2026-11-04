@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -103,14 +104,27 @@ wait
 					t.Fatalf("failed=%v success=%v", failed, success)
 				}
 			}
-			stat, err := os.ReadFile("/proc/" + string(child) + "/stat")
-			if err == nil {
-				fields := strings.Fields(string(stat)[strings.LastIndex(string(stat), ")")+1:])
-				if fields[0] != "Z" {
-					t.Fatalf("child still alive: %s", child)
+			// SIGKILL delivery is asynchronous across the process group. Waiting
+			// for the CLI reaps its parent, but does not synchronously reap children.
+			// Require descendant termination within a bounded interval, not the same
+			// scheduling instant as parent exit.
+			deadline = time.Now().Add(time.Second)
+			for {
+				stat, err := os.ReadFile("/proc/" + string(child) + "/stat")
+				if os.IsNotExist(err) || errors.Is(err, syscall.ESRCH) {
+					break
 				}
-			} else if !os.IsNotExist(err) {
-				t.Fatal(err)
+				if err != nil {
+					t.Fatal(err)
+				}
+				fields := strings.Fields(string(stat)[strings.LastIndex(string(stat), ")")+1:])
+				if fields[0] == "Z" || fields[0] == "X" {
+					break
+				}
+				if time.Now().After(deadline) {
+					t.Fatalf("child still alive after cancellation deadline: %s", child)
+				}
+				time.Sleep(10 * time.Millisecond)
 			}
 		})
 	}

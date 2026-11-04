@@ -218,14 +218,25 @@ func TestDoctorTerminatesProbeDescendants(t *testing.T) {
 				t.Fatal("probe cancellation hung")
 			}
 			for _, pid := range strings.Fields(string(raw)) {
-				stat, err := os.ReadFile("/proc/" + pid + "/stat")
-				if err == nil {
-					fields := strings.Fields(string(stat)[strings.LastIndex(string(stat), ")")+1:])
-					if fields[0] != "Z" {
-						t.Fatalf("probe process %s still alive", pid)
+				// Killing the process group schedules each member for termination; the
+				// parent returning does not make every child terminal instantaneously.
+				deadline := time.Now().Add(time.Second)
+				for {
+					stat, err := os.ReadFile("/proc/" + pid + "/stat")
+					if os.IsNotExist(err) || errors.Is(err, syscall.ESRCH) {
+						break
 					}
-				} else if !os.IsNotExist(err) && !errors.Is(err, syscall.ESRCH) {
-					t.Fatal(err)
+					if err != nil {
+						t.Fatal(err)
+					}
+					fields := strings.Fields(string(stat)[strings.LastIndex(string(stat), ")")+1:])
+					if fields[0] == "Z" || fields[0] == "X" {
+						break
+					}
+					if time.Now().After(deadline) {
+						t.Fatalf("probe process %s still alive after cancellation deadline", pid)
+					}
+					time.Sleep(10 * time.Millisecond)
 				}
 			}
 		})
