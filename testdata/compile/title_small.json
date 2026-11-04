@@ -5,24 +5,32 @@
     "frame_start": 1,
     "frame_end": 24,
     "fps": 24,
-    "resolution": [64, 64],
-    "samples": 4,
+    "resolution": [384, 160],
+    "samples": 16,
     "world_color": "#101018"
   },
   "camera": {
     "id": "cam",
-    "location": [0, -4.5, 1.2],
-    "rotation_euler_deg": [80, 0, 0],
-    "focal_length_mm": 50
+    "location": [0, -7.5, 1.0],
+    "rotation_euler_deg": [90, 0, 0],
+    "focal_length_mm": 40
   },
   "lights": [
     {
       "id": "key",
       "type": "AREA",
-      "location": [2, -2, 3],
-      "energy": 250,
+      "location": [2.0, -3.0, 3.0],
+      "energy": 500,
       "color": "#FFF5E6",
-      "size": 2
+      "size": 3
+    },
+    {
+      "id": "fill",
+      "type": "AREA",
+      "location": [-2.5, -2.0, 1.8],
+      "energy": 140,
+      "color": "#C8D7FF",
+      "size": 3
     }
   ],
   "objects": [
@@ -31,7 +39,9 @@
       "type": "text",
       "text": "MoBlend",
       "location": [0, 0, 1],
-      "material": { "base_color": "#F2F2F2", "roughness": 0.35 }
+      "rotation_euler_deg": [90, 0, 0],
+      "scale": [1, 1, 1],
+      "material": { "base_color": "#F5F5F5", "roughness": 0.25 }
     }
   ],
   "animation": [
@@ -40,7 +50,7 @@
       "property": "location",
       "interpolation": "ease_in_out",
       "keys": [
-        { "frame": 1, "value": [0, 0, 0.2] },
+        { "frame": 1, "value": [0, 0, 0.5] },
         { "frame": 24, "value": [0, 0, 1] }
       ]
     }

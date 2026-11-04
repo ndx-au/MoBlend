@@ -20,6 +20,6 @@ go run ./cmd/blendctl assets list
 | Unsupported set rejected | 5 fixtures; `TestEvalUnsupportedRejected` |
 | `blendctl guide` | embedded `agent/GUIDE.md` |
 | LLM repair-loop evaluation | **BLOCKED** — no model invoked |
-| Visual contact-sheet review | **BLOCKED** — pending owner review |
+| Visual contact-sheet review | **met for smoke fixtures** — see `VISUAL-REVIEW.md` + `testdata/visual/` |
 
-Proposed roadmap gate (≥10/12 within two revisions) is satisfied for the automated structural/preview criterion without fabricating model scores.
+Proposed roadmap gate (≥10/12 within two revisions) is satisfied for the automated structural/preview criterion without fabricating model scores. LLM authoring eval remains blocked.

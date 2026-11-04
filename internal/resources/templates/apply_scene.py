@@ -128,6 +128,10 @@ def make_text(spec: dict, font_path: Path) -> bpy.types.Object:
         font = bpy.data.fonts.load(str(font_path))
         curve.font = font
     curve.size = float(spec.get("size", 1.0))
+    curve.align_x = "CENTER"
+    curve.align_y = "CENTER"
+    curve.extrude = float(spec.get("extrude", 0.05))
+    curve.bevel_depth = float(spec.get("bevel_depth", 0.01))
     obj = bpy.data.objects.new(spec["id"], curve)
     bpy.context.collection.objects.link(obj)
     return obj

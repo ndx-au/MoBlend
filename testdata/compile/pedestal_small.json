@@ -5,12 +5,12 @@
     "frame_start": 1,
     "frame_end": 24,
     "fps": 24,
-    "resolution": [64, 64],
-    "samples": 4
+    "resolution": [128, 128],
+    "samples": 8
   },
   "camera": {
     "id": "cam",
-    "location": [3, -3, 2],
+    "location": [2.6, -2.6, 1.8],
     "rotation_euler_deg": [65, 0, 45]
   },
   "lights": [
@@ -18,7 +18,7 @@
       "id": "key",
       "type": "AREA",
       "location": [2, -1.5, 3],
-      "energy": 300,
+      "energy": 350,
       "size": 2
     }
   ],

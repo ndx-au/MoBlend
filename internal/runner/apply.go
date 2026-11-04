@@ -25,12 +25,12 @@ type ApplyOptions struct {
 
 // ApplyResult paths from a successful apply/render.
 type ApplyResult struct {
-	JobDir   string
-	Blend    string
-	PNG      string
-	Frames   []string
-	Manifest string
-	Args     []string
+	JobDir   string   `json:"job_dir"`
+	Blend    string   `json:"blend"`
+	PNG      string   `json:"png"`
+	Frames   []string `json:"frames,omitempty"`
+	Manifest string   `json:"manifest,omitempty"`
+	Args     []string `json:"args,omitempty"`
 }
 
 // RunApply extracts pack+font, writes compile artifacts, launches Blender.
