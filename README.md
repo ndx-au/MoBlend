@@ -56,6 +56,12 @@ Catalogue assets: `base_cube`, `column_chart`. Scene schema `1.0.0`, project/mod
 
 Agents should start with `blendctl guide` (also `agent/GUIDE.md`). Use exact asset IDs only; repair from `validate --json` diagnostics.
 
+## Portable authoring skill
+
+[MoBlend authoring](skills/moblend-authoring/SKILL.md) guides an agent through scene/module/shot selection, validation, preview inspection, repair and verified rendering. The installed CLI remains the source of truth for schemas, asset controls and limits.
+
+Copy or link the `skills/moblend-authoring/` directory into your harness's supported skill location. A harness without skill discovery can read its `SKILL.md` directly as task guidance. It uses standard Markdown with `name`/`description` YAML frontmatter and ordinary files, commands and image inspection; no harness-specific API or plugin is required. Configure the MoBlend executable/source checkout separately. Installing the skill does not install Blender or the CLI.
+
 ## What v1 does not do
 
 Arbitrary Python/`bpy`, user `.blend` import, RAG/fuzzy search, physics/rigs/custom node graphs, video/FFmpeg, MCP, or a GUI. See `docs/LIMITATIONS.md`.
