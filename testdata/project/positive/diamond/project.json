@@ -1,0 +1,11 @@
+{
+  "project_version": "1.0.0",
+  "kind": "project",
+  "entry": "top",
+  "modules": [
+    { "id": "top", "path": "top.json" },
+    { "id": "left", "path": "left.json" },
+    { "id": "right", "path": "right.json" },
+    { "id": "base", "path": "base.json" }
+  ]
+}

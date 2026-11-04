@@ -1,0 +1,40 @@
+{
+  "module_version": "1.0.0",
+  "kind": "entry",
+  "namespace": "outro",
+  "schema_version": "1.0.0",
+  "asset_pack_version": "0.1.0",
+  "imports": [{ "alias": "shared", "module": "shared" }],
+  "scene": {
+    "frame_start": 1,
+    "frame_end": 8,
+    "fps": 24,
+    "resolution": [64, 64],
+    "samples": 4,
+    "world_color": "#0C0C12"
+  },
+  "camera": {
+    "id": "cam",
+    "location": [0, -4.2, 1.1],
+    "rotation_euler_deg": [82, 0, 0]
+  },
+  "lights": [
+    {
+      "id": "key",
+      "type": "AREA",
+      "location": [2, -1.5, 3],
+      "energy": 180,
+      "size": 2
+    }
+  ],
+  "objects": [
+    {
+      "id": "label",
+      "type": "text",
+      "text": "Outro",
+      "location": [0, 0, 1.35],
+      "material": { "base_color": "#DDDDE8", "roughness": 0.4 }
+    }
+  ],
+  "animation": []
+}

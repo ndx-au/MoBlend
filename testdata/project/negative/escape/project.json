@@ -1,0 +1,11 @@
+{
+  "project_version": "1.0.0",
+  "kind": "project",
+  "entry": "main",
+  "modules": [
+    {
+      "id": "main",
+      "path": "../title_flat.json"
+    }
+  ]
+}

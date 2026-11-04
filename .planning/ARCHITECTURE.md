@@ -56,7 +56,7 @@ This is execution hygiene, not a hostile-code sandbox. V1 only loads its own tru
 
 ## Proposed CLI surface
 
-These commands are design targets, not currently implemented:
+The following surface was the baseline design for Phases 0–6; consult current CLI help and phase evidence for implemented behavior. Project/shot extensions below remain planned:
 
 ```text
 blendctl doctor --blender /path/to/blender
@@ -81,3 +81,25 @@ Diagnostics include stable code, stage, JSON pointer, message, and remediation h
 3. Render regression checks use a pinned CPU-capable configuration, tolerant comparisons, and explicit environment metadata; do not compare raw `.blend` hashes or promise GPU equality.
 
 Reference render aesthetic approval is separate from structural correctness. Preserve a contact sheet and require a named visual review result. Consult the [Blender command-line manual](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html) and version-matched Python API during Phase 0; the linked manual was not retrievable during preparation of this kit.
+
+## Approved extension: module resolver (Phase 7, not implemented)
+
+The current implementation compiles a validated `spec.Declaration`; add a file-aware project resolver before that boundary, not another Blender backend. Keep raw single-file entry points compatible. Proposed flow:
+
+Project manifest + explicit module graph → strict decoding → bounded dependency resolution + source map → assembled declaration → existing semantic validation/normalization → existing compiler/runner.
+
+The manifest has its own version and explicit entry/module dependencies. The existing scene schema version is not silently redefined to mean a project. Modules contribute objects, lights and animation tracks; the entry owns camera, scene settings and asset-pack version. Material values stay inline as supported by the current scene model; shared named material libraries and parameter substitution are not Phase 7 requirements.
+
+The phase CONTEXT defines logical namespaces and explicit import aliases. Qualify IDs deterministically and rewrite references through typed fields, not recursive string replacement. Reject ambiguity and cycles; no last-writer-wins merging, implicit overrides, templating, expressions, remote imports or wildcard scans. Import order may not determine scene meaning. Keep intentionally ordered lists (for example keyframes) ordered; canonicalize only unordered module/entity collections.
+
+Resolve paths relative to the declaring file under the manifest directory. Normalize paths, resolve symlinks and reject escape from that root. Read bounded input snapshots once per job so validation and compilation use the same bytes. Bound modules, depth and total bytes; scene limits apply after assembly. JSON imports are declarations, not permission to load arbitrary Blender assets or execute files.
+
+Carry source file and original JSON pointer for each declaration field/entity through reference rewriting and validator errors. Source filenames are project-relative. Existing diagnostic fields stay compatible; source context is additive. Source maps and provenance live in separate artifacts so absolute checkout paths never alter generated script/data. Existing duplicate-ID and reference validation still applies after assembly.
+
+## Approved extension: independent shots (Phase 8, not implemented)
+
+A project may declare multiple shot IDs, each with a scene entry and explicit module dependencies. A selected build resolves that shot's transitive dependency closure into one declaration and uses the current fresh-process rendering model. The loader validates the outer manifest for every command, but only selected-shot contents for a selected-shot build. An explicit project-wide validation traverses every shot.
+
+Outputs and manifests are isolated per shot. Record content hashes for the resolved input snapshot, dependency graph and tool/resource versions; do not implement cache reuse until invalidation semantics have been designed and tested. A shared module is immutable input during a run. Changing it requires rebuilding dependent shots but does not justify silently rerendering every shot.
+
+No multi-scene Blender runtime, NLE timeline assembly or distributed scheduler is implied. Parameterized component instantiation will require a later separate contract for types, defaults, bounds and reference binding.

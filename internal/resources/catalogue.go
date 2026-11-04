@@ -54,9 +54,33 @@ func LoadCatalogue() (Catalogue, error) {
 	return out, nil
 }
 
-// SchemaJSON returns the embedded JSON Schema bytes.
+// SchemaJSON returns the embedded scene JSON Schema bytes.
 func SchemaJSON() ([]byte, error) {
 	return contentFS.ReadFile("schema/v1.json")
+}
+
+// SchemaProjectJSON returns the embedded project manifest schema.
+func SchemaProjectJSON() ([]byte, error) {
+	return contentFS.ReadFile("schema/project_v1.json")
+}
+
+// SchemaModuleJSON returns the embedded module/entry schema.
+func SchemaModuleJSON() ([]byte, error) {
+	return contentFS.ReadFile("schema/module_v1.json")
+}
+
+// SchemaKindJSON returns schema bytes for kind: scene (default), project, or module.
+func SchemaKindJSON(kind string) ([]byte, error) {
+	switch kind {
+	case "", "scene":
+		return SchemaJSON()
+	case "project":
+		return SchemaProjectJSON()
+	case "module", "entry":
+		return SchemaModuleJSON()
+	default:
+		return nil, fmt.Errorf("unknown schema kind %q (scene|project|module)", kind)
+	}
 }
 
 // CatalogueJSON returns the embedded catalogue bytes.

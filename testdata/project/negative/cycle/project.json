@@ -1,0 +1,15 @@
+{
+  "project_version": "1.0.0",
+  "kind": "project",
+  "entry": "a",
+  "modules": [
+    {
+      "id": "a",
+      "path": "a.json"
+    },
+    {
+      "id": "b",
+      "path": "b.json"
+    }
+  ]
+}

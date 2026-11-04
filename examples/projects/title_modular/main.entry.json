@@ -1,0 +1,52 @@
+{
+  "module_version": "1.0.0",
+  "kind": "entry",
+  "namespace": "main",
+  "schema_version": "1.0.0",
+  "asset_pack_version": "0.1.0",
+  "imports": [
+    {
+      "alias": "title",
+      "module": "title"
+    }
+  ],
+  "scene": {
+    "frame_start": 1,
+    "frame_end": 24,
+    "fps": 24,
+    "resolution": [
+      64,
+      64
+    ],
+    "samples": 4,
+    "world_color": "#101018"
+  },
+  "camera": {
+    "id": "cam",
+    "location": [
+      0,
+      -4,
+      1
+    ],
+    "rotation_euler_deg": [
+      90,
+      0,
+      0
+    ]
+  },
+  "lights": [
+    {
+      "id": "key",
+      "type": "AREA",
+      "location": [
+        2,
+        -2,
+        3
+      ],
+      "energy": 250,
+      "size": 2
+    }
+  ],
+  "objects": [],
+  "animation": []
+}

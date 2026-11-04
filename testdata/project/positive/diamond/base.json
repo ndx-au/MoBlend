@@ -1,0 +1,16 @@
+{
+  "module_version": "1.0.0",
+  "kind": "module",
+  "namespace": "base",
+  "imports": [],
+  "objects": [
+    {
+      "id": "mark",
+      "type": "form",
+      "form": "cube",
+      "location": [0, 0, 0],
+      "material": { "base_color": "#4A90D9", "roughness": 0.4 }
+    }
+  ],
+  "animation": []
+}

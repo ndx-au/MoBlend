@@ -25,3 +25,20 @@ Update status only with recorded verification evidence.
 ## Release gate
 
 Primary platform (Linux amd64) requirements met with explicit partials/blocks above. No network/RAG/model key required for ordinary use. Public publication requires owner authorization. Missing visual review and LLM eval are documented blockers for those *claims*, not for the Linux CLI RC.
+
+## Planned modularity extension — not included in RC completion claims
+
+| ID | Requirement | Acceptance evidence | Phase | Status |
+|---|---|---|---|---|
+| MOD-01 | Backward-compatible project manifest and module schemas | Existing single-file corpus unchanged; strict project/module version and field validation | 7 | met |
+| MOD-02 | Explicit bounded dependency graph | Missing files, cycles, depth/count/byte overruns and escaping paths/symlinks rejected offline before Blender | 7 | met |
+| MOD-03 | Namespaced typed composition | Distinct modules may reuse local IDs; duplicate namespaces and unresolved/conflicting references fail; import order has no semantic effect | 7 | met |
+| MOD-04 | Source-aware validation | Nested module errors report originating relative filename and original JSON pointer in human/JSON output | 7 | met |
+| MOD-05 | Compiler equivalence and project-wide limits | Equivalent modular/flat fixture has equal normalized data/script; aggregate scene limits enforced; relocation preserves bytes | 7 | met |
+| MOD-06 | Usable project CLI and render path | Dependency inspection plus validate/compile/preview/render work on a modular example; real Blender scene/render equivalence | 7 | met |
+| MOD-07 | Agent ownership guide | Shipped guide/schema/examples describe file ownership, imports, namespaces and safe concurrent editing without a model dependency | 7 | met |
+| SHOT-01 | Explicit independent shot targets | Selected shot loads only its closure; ambiguous selection fails; explicit whole-project validation checks every shot | 8 | met |
+| SHOT-02 | Isolated outputs and provenance | Per-shot scene/frames/manifests; concurrent jobs isolated; dependency/content hashes recorded from input snapshot | 8 | met |
+| SHOT-03 | Change isolation | Three-shot example: one-shot edit preserves unrelated resolved outputs; shared edit changes hashes of dependent shots | 8 | met |
+
+Phases 7–8 gates are met with VERIFICATION evidence. These do not invent LLM-authoring or multi-platform claims; the blocked model-based authoring claim remains blocked.

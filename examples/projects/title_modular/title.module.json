@@ -1,0 +1,47 @@
+{
+  "module_version": "1.0.0",
+  "kind": "module",
+  "namespace": "title",
+  "imports": [],
+  "objects": [
+    {
+      "id": "text",
+      "type": "text",
+      "text": "MoBlend",
+      "location": [
+        0,
+        0,
+        1
+      ],
+      "material": {
+        "base_color": "#F2F2F2",
+        "roughness": 0.35
+      }
+    }
+  ],
+  "animation": [
+    {
+      "target_id": "text",
+      "property": "location",
+      "interpolation": "linear",
+      "keys": [
+        {
+          "frame": 1,
+          "value": [
+            0,
+            0,
+            0.5
+          ]
+        },
+        {
+          "frame": 24,
+          "value": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    }
+  ]
+}

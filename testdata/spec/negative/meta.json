@@ -18,5 +18,21 @@
   "duplicate_id.json": {
     "code": "SEM_DUPLICATE_ID",
     "pointer": "/objects/0/id"
+  },
+  "conflicting_track.json": {
+    "code": "SEM_CONFLICTING_TRACK",
+    "pointer": "/animation/1"
+  },
+  "duplicate_keyframe.json": {
+    "code": "SEM_DUPLICATE_KEYFRAME",
+    "pointer": "/animation/0/keys/1/frame"
+  },
+  "reversed_range.json": {
+    "code": "SEM_FRAME_RANGE",
+    "pointer": "/scene/frame_end"
+  },
+  "bad_color.json": {
+    "code": "SEM_COLOR",
+    "pointer": "/objects/0/material/base_color"
   }
 }

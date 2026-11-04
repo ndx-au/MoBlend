@@ -1,0 +1,18 @@
+{
+  "module_version": "1.0.0",
+  "kind": "module",
+  "namespace": "b",
+  "imports": [
+    {
+      "alias": "a",
+      "module": "a"
+    }
+  ],
+  "objects": [
+    {
+      "id": "o",
+      "type": "text",
+      "text": "y"
+    }
+  ]
+}

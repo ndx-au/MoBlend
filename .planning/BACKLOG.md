@@ -9,3 +9,8 @@
 - Distributed render workers and service deployment.
 - More Blender versions and hardware acceleration profiles.
 - Optional retrieval for a much larger asset library, only if a future measured need justifies it. No RAG dependencies or preparatory vector-store architecture in v1.
+
+- Parameterized reusable components: typed inputs/defaults/bounds and deterministic instance expansion after Phase 7/8; no arbitrary expressions or programming language.
+- Content-addressed per-shot build cache with tested invalidation; Phase 8 records dependencies but does not reuse cached renders.
+
+Explicit local file composition and independent shot selection have moved into roadmap Phases 7 and 8. They are no longer deferred ideas; implementation and acceptance evidence are pending.

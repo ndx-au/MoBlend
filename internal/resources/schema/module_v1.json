@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ndx.video/moblend/schema/module_v1.json",
+  "title": "MoBlend module or entry document v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["module_version", "kind", "namespace"],
+  "properties": {
+    "module_version": { "type": "string", "const": "1.0.0" },
+    "kind": { "type": "string", "enum": ["module", "entry"] },
+    "namespace": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9]*$"
+    },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "asset_pack_version": { "type": "string", "const": "0.1.0" },
+    "imports": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["alias", "module"],
+        "properties": {
+          "alias": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9]*$"
+          },
+          "module": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "scene": { "type": "object" },
+    "camera": { "type": "object" },
+    "lights": { "type": "array", "maxItems": 8 },
+    "objects": { "type": "array", "maxItems": 32 },
+    "animation": { "type": "array", "maxItems": 64 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "entry" } } },
+      "then": {
+        "required": [
+          "module_version",
+          "kind",
+          "namespace",
+          "schema_version",
+          "asset_pack_version",
+          "scene",
+          "camera"
+        ]
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "module" } } },
+      "then": {
+        "not": {
+          "anyOf": [
+            { "required": ["scene"] },
+            { "required": ["camera"] },
+            { "required": ["schema_version"] },
+            { "required": ["asset_pack_version"] }
+          ]
+        }
+      }
+    }
+  ]
+}

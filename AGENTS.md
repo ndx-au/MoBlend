@@ -12,7 +12,7 @@ Implement [`.progress/README.md`](.progress/README.md). That file is authoritati
 
 - Plan and gates live under `.planning/` (especially `.planning/ROADMAP.md` and phase plans).
 - Record history by **appending** entries under `.progress/milestone/`, `.progress/general/`, or `.progress/fixes/` — never edit, rename, or delete committed progress files.
-- Map roadmap phases to milestone tokens: Phase 0 → `M000`, Phase 1 → `M001`, … Phase 6 → `M006`. Frontmatter may use short forms such as `M0 — Prove the Blender boundary`.
+- Map roadmap phases to milestone tokens: Phase 0 → `M000`, Phase 1 → `M001`, … Phase 6 → `M006`, Phase 7 → `M007`, Phase 8 → `M008`. Frontmatter may use short forms such as `M0 — Prove the Blender boundary`.
 - Append an entry for each meaningful session of work (including partial milestone progress, decisions, reversals, and fixes). Skip only trivial typo-only changes.
 - Optional harness: `.claude/rules/dotprogress.md` and `.claude/skills/dotprogress/`.
 - Keep `.progress/` tracked in git (do not gitignore it).

@@ -1,0 +1,8 @@
+{
+  "module_version": "1.0.0",
+  "kind": "module",
+  "namespace": "right",
+  "imports": [{ "alias": "base", "module": "base" }],
+  "objects": [{ "id": "R", "type": "text", "text": "R" }],
+  "animation": []
+}

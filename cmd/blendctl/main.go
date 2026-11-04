@@ -11,10 +11,10 @@ import (
 
 	"github.com/ndx-au/MoBlend/internal/compile"
 	"github.com/ndx-au/MoBlend/internal/diag"
+	"github.com/ndx-au/MoBlend/internal/project"
 	"github.com/ndx-au/MoBlend/internal/resources"
 	"github.com/ndx-au/MoBlend/internal/runner"
 	"github.com/ndx-au/MoBlend/internal/spec"
-	"github.com/ndx-au/MoBlend/internal/validate"
 )
 
 func main() {
@@ -38,7 +38,13 @@ func main() {
 		}
 		fmt.Println(sum)
 	case "schema":
-		data, err := resources.SchemaJSON()
+		kind := "scene"
+		if len(os.Args) > 2 && !hasFlag(os.Args[2:], "--json") {
+			if k := firstNonFlag(os.Args[2:]); k != "" {
+				kind = k
+			}
+		}
+		data, err := resources.SchemaKindJSON(kind)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "schema: %v\n", err)
 			os.Exit(1)
@@ -84,6 +90,11 @@ func main() {
 			fmt.Fprintf(os.Stderr, "render: %v\n", err)
 			os.Exit(1)
 		}
+	case "inspect":
+		if err := cmdInspect(os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "inspect: %v\n", err)
+			os.Exit(1)
+		}
 	case "help", "-h", "--help":
 		usage()
 	default:
@@ -99,15 +110,16 @@ func usage() {
 Usage:
   blendctl version
   blendctl pack-sha256
-  blendctl schema
+  blendctl schema [scene|project|module]
   blendctl assets list [--json]
   blendctl assets describe <asset-id> [--json]
-  blendctl validate <scene.json> [--json]
-  blendctl compile <scene.json> --out DIR
+  blendctl validate <scene-or-project.json> [--json] [--shot ID]
+  blendctl compile <scene-or-project.json> --out DIR [--shot ID]
+  blendctl inspect <project.json> [--json]
   blendctl doctor [--json] [--blender PATH]
   blendctl guide
-  blendctl preview <scene.json> [--frame N] [--out DIR]
-  blendctl render <scene.json> [--out DIR]
+  blendctl preview <scene-or-project.json> [--frame N] [--out DIR] [--shot ID]
+  blendctl render <scene-or-project.json> [--out DIR] [--shot ID]
   blendctl smoke [--out DIR]
 
 Environment:
@@ -201,16 +213,15 @@ func cmdAssets(args []string) error {
 func cmdValidate(args []string) error {
 	path := firstNonFlag(args)
 	if path == "" {
-		fmt.Fprintln(os.Stderr, "usage: blendctl validate <scene.json> [--json]")
+		fmt.Fprintln(os.Stderr, "usage: blendctl validate <scene-or-project.json> [--json] [--shot ID]")
 		return fmt.Errorf("missing path")
 	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "validate: %v\n", err)
-		return err
-	}
-	res, err := validate.ParseAndValidate(data)
 	wantJSON := hasFlag(args, "--json")
+	shot := flagValue(args, "--shot")
+	if hasFlag(args, "--all-shots") {
+		return cmdValidateAllShots(path, wantJSON)
+	}
+	lr, err := project.LoadSceneOrProject(path, shot)
 	if err != nil {
 		elist, ok := err.(diag.ErrorList)
 		if !ok {
@@ -226,7 +237,54 @@ func cmdValidate(args []string) error {
 		return err
 	}
 	if wantJSON {
-		return encodeJSON(map[string]any{"ok": true, "schema_version": res.Decl.SchemaVersion})
+		return encodeJSON(map[string]any{
+			"ok":             true,
+			"schema_version": lr.Decl.SchemaVersion,
+			"project":        lr.IsProject,
+			"shot":           lr.Shot,
+			"files":          lr.Files,
+		})
+	}
+	fmt.Println("OK")
+	return nil
+}
+
+func cmdValidateAllShots(path string, wantJSON bool) error {
+	rep, err := project.Inspect(path)
+	if err != nil {
+		return err
+	}
+	if len(rep.Shots) == 0 {
+		_, err := project.LoadSceneOrProject(path, "")
+		return err
+	}
+	var all diag.ErrorList
+	for _, s := range rep.Shots {
+		if _, err := project.LoadSceneOrProject(path, s.ID); err != nil {
+			if el, ok := err.(diag.ErrorList); ok {
+				for i := range el {
+					if el[i].Hint == "" {
+						el[i].Hint = "shot " + s.ID
+					}
+				}
+				all = append(all, el...)
+			} else {
+				all = append(all, diag.Diagnostic{Code: "SHOT_VALIDATE", Stage: "semantic", Message: err.Error(), Hint: "shot " + s.ID})
+			}
+		}
+	}
+	if len(all) > 0 {
+		if wantJSON {
+			_ = encodeJSON(map[string]any{"ok": false, "diagnostics": all})
+		} else {
+			for _, d := range all {
+				fmt.Fprintln(os.Stderr, d.Error())
+			}
+		}
+		return all
+	}
+	if wantJSON {
+		return encodeJSON(map[string]any{"ok": true, "shots": len(rep.Shots)})
 	}
 	fmt.Println("OK")
 	return nil
@@ -236,21 +294,42 @@ func cmdCompile(args []string) error {
 	path := firstNonFlag(args)
 	outDir := flagValue(args, "--out")
 	if path == "" || outDir == "" {
-		return fmt.Errorf("usage: blendctl compile <scene.json> --out DIR")
+		return fmt.Errorf("usage: blendctl compile <scene-or-project.json> --out DIR [--shot ID]")
 	}
-	data, err := os.ReadFile(path)
+	lr, err := project.LoadSceneOrProject(path, flagValue(args, "--shot"))
 	if err != nil {
 		return err
 	}
-	art, _, err := compile.CompileJSON(data)
+	art, err := compile.CompileDeclaration(lr.Decl)
 	if err != nil {
 		return err
 	}
 	if err := compile.WriteToDir(outDir, art); err != nil {
 		return err
 	}
+	if lr.SourceMap != nil {
+		data, _ := json.MarshalIndent(lr.SourceMap, "", "  ")
+		_ = os.WriteFile(filepath.Join(outDir, "source_map.json"), append(data, '\n'), 0o644)
+	}
+	if lr.Resolved != nil {
+		if _, err := project.WriteDependencyManifest(outDir, *lr.Resolved); err != nil {
+			return err
+		}
+	}
 	fmt.Printf("wrote %s\nwrote %s\n", filepath.Join(outDir, art.ScriptName), filepath.Join(outDir, art.DataName))
 	return nil
+}
+
+func cmdInspect(args []string) error {
+	path := firstNonFlag(args)
+	if path == "" {
+		return fmt.Errorf("usage: blendctl inspect <project.json> [--json]")
+	}
+	rep, err := project.Inspect(path)
+	if err != nil {
+		return err
+	}
+	return encodeJSON(rep)
 }
 
 func cmdDoctor(args []string) int {
@@ -285,16 +364,23 @@ func cmdApply(args []string, mode, usage string) error {
 	if path == "" {
 		return fmt.Errorf("%s", usage)
 	}
-	data, err := os.ReadFile(path)
+	lr, err := project.LoadSceneOrProject(path, flagValue(args, "--shot"))
 	if err != nil {
 		return err
 	}
-	art, validated, err := compile.CompileJSON(data)
+	art, err := compile.CompileDeclaration(lr.Decl)
 	if err != nil {
 		return err
 	}
 	outParent := flagValue(args, "--out")
 	if outParent != "" {
+		if err := os.MkdirAll(outParent, 0o755); err != nil {
+			return err
+		}
+	}
+	// Per-shot isolation: nest under shot id when selected.
+	if shot := flagValue(args, "--shot"); shot != "" && outParent != "" {
+		outParent = filepath.Join(outParent, shot)
 		if err := os.MkdirAll(outParent, 0o755); err != nil {
 			return err
 		}
@@ -308,10 +394,13 @@ func cmdApply(args []string, mode, usage string) error {
 	res, err := runner.RunApply(context.Background(), runner.ApplyOptions{
 		Parent:      outParent,
 		Artifacts:   art,
-		Decl:        validated.Decl,
+		Decl:        lr.Decl,
 		Mode:        mode,
 		RenderFrame: frame,
 	})
+	if err == nil && lr.Resolved != nil {
+		_, _ = project.WriteDependencyManifest(filepath.Join(res.JobDir, "out"), *lr.Resolved)
+	}
 	if encErr := encodeJSON(res); encErr != nil && err == nil {
 		return encErr
 	}

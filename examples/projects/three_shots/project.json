@@ -1,0 +1,16 @@
+{
+  "project_version": "1.0.0",
+  "kind": "project",
+  "entry": "intro",
+  "modules": [
+    { "id": "shared", "path": "shared.module.json" },
+    { "id": "intro", "path": "intro.entry.json" },
+    { "id": "product", "path": "product.entry.json" },
+    { "id": "outro", "path": "outro.entry.json" }
+  ],
+  "shots": [
+    { "id": "intro", "entry": "intro" },
+    { "id": "product", "entry": "product" },
+    { "id": "outro", "entry": "outro" }
+  ]
+}

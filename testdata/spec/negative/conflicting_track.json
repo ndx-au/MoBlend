@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "asset_pack_version": "0.1.0",
+  "scene": {
+    "frame_start": 1,
+    "frame_end": 24,
+    "fps": 24,
+    "resolution": [64, 64],
+    "samples": 4
+  },
+  "camera": {
+    "id": "cam",
+    "location": [0, -2, 1],
+    "rotation_euler_deg": [80, 0, 0]
+  },
+  "objects": [{ "id": "t", "type": "text", "text": "hi" }],
+  "animation": [
+    {
+      "target_id": "t",
+      "property": "location",
+      "interpolation": "linear",
+      "keys": [
+        { "frame": 1, "value": [0, 0, 0] },
+        { "frame": 24, "value": [0, 0, 1] }
+      ]
+    },
+    {
+      "target_id": "t",
+      "property": "location",
+      "interpolation": "linear",
+      "keys": [
+        { "frame": 1, "value": [0, 0, 0] },
+        { "frame": 24, "value": [1, 0, 0] }
+      ]
+    }
+  ]
+}

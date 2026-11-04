@@ -4,7 +4,7 @@ Declarative motion graphics for Blender, aimed at coding agents.
 
 You (or an agent) write a small versioned **JSON** scene. **`blendctl`** (Go) validates it, compiles deterministic Blender Python against a **bundled asset pack**, and produces an editable `.blend`, PNG frames, and a completion manifest. No RAG, no hosted model, no separate Python install for users.
 
-**Status:** Linux amd64 release candidate `0.1.0-rc1` (roadmap phases 0–6). Blender **5.3** family required. macOS/Windows not verified yet.
+**Status:** Linux amd64 release candidate `0.1.0-rc1` (roadmap phases 0–8). Blender **5.3** family required. macOS/Windows not verified yet. Multi-file projects and independent shots are supported on top of single-file scenes.
 
 ## Quick start
 
@@ -31,12 +31,13 @@ VERSION=0.1.0-rc1 scripts/release-linux-amd64.sh
 |---|---|
 | `doctor` | Check Blender path/version |
 | `guide` | Print the local agent guide |
-| `schema` | Print JSON Schema v1 |
+| `schema [scene\|project\|module]` | Print JSON Schema (scene default) |
 | `assets list` / `assets describe <id>` | Exact-ID catalogue |
-| `validate <scene.json> [--json]` | Strict parse + semantic checks (no Blender) |
-| `compile <scene.json> --out DIR` | Emit trusted script + canonical data (no Blender) |
-| `preview <scene.json> [--frame N] [--out DIR]` | One frame + `.blend` + `manifest.json` |
-| `render <scene.json> [--out DIR]` | Full frame range under `frames/` |
+| `validate <scene-or-project.json> [--json] [--shot ID\|--all-shots]` | Strict parse + semantic checks (no Blender) |
+| `compile <scene-or-project.json> --out DIR [--shot ID]` | Emit trusted script + canonical data (no Blender) |
+| `inspect <project.json>` | Machine-readable module/shot listing |
+| `preview <scene-or-project.json> [--frame N] [--out DIR] [--shot ID]` | One frame + `.blend` + `manifest.json` |
+| `render <scene-or-project.json> [--out DIR] [--shot ID]` | Full frame range under `frames/` |
 | `smoke` | Pack/runner boundary smoke |
 
 Set `MOBLEND_BLENDER` if Blender is not on `PATH`.
@@ -48,8 +49,10 @@ Set `MOBLEND_BLENDER` if Blender is not on `PATH`.
 | `examples/title.json` | Text title reveal |
 | `examples/pedestal.json` | Cylinder plinth + `base_cube` product |
 | `examples/chart.json` | `column_chart` Geometry Nodes bars |
+| `examples/projects/title_modular/` | Modular title (paired flat fixture under `testdata/project/`) |
+| `examples/projects/three_shots/` | Intro/product/outro sharing one module |
 
-Catalogue assets: `base_cube`, `column_chart`. Schema `1.0.0`, asset pack `0.1.0`.
+Catalogue assets: `base_cube`, `column_chart`. Scene schema `1.0.0`, project/module `1.0.0`, asset pack `0.1.0`.
 
 Agents should start with `blendctl guide` (also `agent/GUIDE.md`). Use exact asset IDs only; repair from `validate --json` diagnostics.
 
@@ -67,7 +70,7 @@ scripts/build-column-chart.sh             # add/update column chart GN
 scripts/make-contact-sheet.sh             # title/pedestal/chart contact sheet
 ```
 
-Layout: `cmd/blendctl`, `internal/{spec,validate,compile,runner,resources}`, embedded pack/fonts/schema under `internal/resources/`.
+Layout: `cmd/blendctl`, `internal/{spec,validate,compile,project,runner,resources}`, embedded pack/fonts/schema under `internal/resources/`.
 
 ## Docs and project history
 
@@ -75,6 +78,8 @@ Layout: `cmd/blendctl`, `internal/{spec,validate,compile,runner,resources}`, emb
 |---|---|
 | `docs/QUICKSTART.md` | First render |
 | `docs/TROUBLESHOOTING.md` | Common failures |
+| [Test playbook](docs/TEST-PLAYBOOK.md) | Scenario battery, authoring prompts and regression repair loop |
+| [Playbook run 2026-11-04](docs/TEST-PLAYBOOK-RUN-2026-11-04.md) | Latest recorded A/B/C/D/M/S + P-brief results |
 | `docs/LIMITATIONS.md` | Compatibility boundaries |
 | `AGENTS.md` | Agent execution rules |
 | `.planning/` | Roadmap, phase plans, verification |

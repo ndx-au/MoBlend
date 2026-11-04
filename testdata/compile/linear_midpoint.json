@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "asset_pack_version": "0.1.0",
+  "scene": {
+    "frame_start": 1,
+    "frame_end": 21,
+    "fps": 24,
+    "resolution": [64, 64],
+    "samples": 4
+  },
+  "camera": {
+    "id": "cam",
+    "location": [0, -4, 1],
+    "rotation_euler_deg": [90, 0, 0]
+  },
+  "objects": [
+    {
+      "id": "cube",
+      "type": "form",
+      "form": "cube",
+      "location": [0, 0, 0],
+      "material": { "base_color": "#FFFFFF", "roughness": 0.5 }
+    }
+  ],
+  "animation": [
+    {
+      "target_id": "cube",
+      "property": "location",
+      "interpolation": "linear",
+      "keys": [
+        { "frame": 1, "value": [0, 0, 0] },
+        { "frame": 21, "value": [2, 0, 0] }
+      ]
+    }
+  ]
+}

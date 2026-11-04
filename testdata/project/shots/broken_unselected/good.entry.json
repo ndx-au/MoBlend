@@ -1,0 +1,32 @@
+{
+  "module_version": "1.0.0",
+  "kind": "entry",
+  "namespace": "good",
+  "schema_version": "1.0.0",
+  "asset_pack_version": "0.1.0",
+  "imports": [],
+  "scene": {
+    "frame_start": 1,
+    "frame_end": 2,
+    "fps": 24,
+    "resolution": [64, 64],
+    "samples": 4,
+    "world_color": "#101018"
+  },
+  "camera": {
+    "id": "cam",
+    "location": [0, -4, 1],
+    "rotation_euler_deg": [90, 0, 0]
+  },
+  "lights": [],
+  "objects": [
+    {
+      "id": "cube",
+      "type": "form",
+      "form": "cube",
+      "location": [0, 0, 0],
+      "material": { "base_color": "#FFFFFF", "roughness": 0.5 }
+    }
+  ],
+  "animation": []
+}

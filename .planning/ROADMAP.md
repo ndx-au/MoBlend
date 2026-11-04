@@ -1,6 +1,10 @@
 # Implementation roadmap
 
-Status: ready for Phase 0 planning. Phases are dependency gates, not calendar promises. Complete one vertical slice at a time; preserve evidence before expanding the language.
+Status: Phases 0–6 executed; Linux amd64 `0.1.0-rc1` recorded in phase evidence. Phase 5 model-based authoring evaluation remains blocked; automated fixture results are not model repair-loop evidence. Additional platform support and public publication are not claimed. Phase 7 is the next implementation phase; Phase 8 follows it.
+
+Reader: an implementation agent continuing from the existing RC. Start with Phase 7's PLAN and CONTEXT; preserve the working single-file compiler and its verification history. The Phase 0–6 descriptions below remain the original baseline, not instructions to restart completed work. Phases are dependency gates, not calendar promises.
+
+Verification companion: [test and agent evaluation playbook](../docs/TEST-PLAYBOOK.md). Use its baseline cases now, module cases for Phase 7, and shot cases for Phase 8. Scenario definitions are not pass evidence.
 
 ## Phase 0 — Prove the Blender boundary
 
@@ -90,6 +94,34 @@ Tasks:
 
 **Gate:** REQUIREMENTS release gate is met; an independent onboarding run produces the reference outputs using only the documented prerequisites. Report measured binary size and render time with hardware/context rather than inventing performance targets.
 
+## Phase 7 — Compose projects from explicit local modules
+
+**Status:** complete (2026-11-04). **Depends on:** executed baseline 0–6; blocked LLM evaluation remains tracked separately and must not be claimed as satisfied. **Outcome:** agents own separate JSON modules that resolve to one validated scene through the existing compiler.
+
+Tasks:
+1. Introduce a separately versioned project manifest and module schema. Keep scene schema `1.0.0` and existing single-file commands compatible. Specify the contract in the phase CONTEXT before implementation.
+2. Add a Go project loader/resolver ahead of the current declaration validator/compiler. List modules explicitly, resolve project-relative local imports, reject missing files and cycles, and enforce project-root containment including symlink targets.
+3. Namespace object/light IDs and rewrite typed animation references. Reject duplicate namespaces, IDs, unresolved references, and conflicting tracks. Use explicit imports for cross-module references; never depend on directory scanning or load order. Keep camera, render settings and asset-pack selection in the scene entry.
+4. Preserve source file + original JSON pointer through resolution, normalization and semantic validation. Add source-aware diagnostics without removing existing single-file diagnostic fields. Emit a source map separately from deterministic script/data.
+5. Bound module count, dependency depth, per-file bytes and total project bytes. Apply existing scene/render limits to the fully resolved declaration; splitting files must not bypass limits. Reject unsupported module/project versions.
+6. Extend validate, compile, preview and render to accept a project manifest. Add an inspect command or equivalent machine-readable dependency listing so agents can identify entry points, imports and owned files without reading the whole project.
+7. Supply a modular version of an existing reference scene and a paired monolithic fixture. Update shipped schema/guide and document file ownership conventions for concurrent agents.
+
+**Gate:** MOD-01 through MOD-07 pass. Equivalent modular and monolithic fixtures produce equal normalized scene data and script bytes and equivalent Blender scene properties/render outputs under the pinned environment. Test imports reordered, key order changed, a different project checkout path, duplicate names, cycles, missing dependencies, traversal, escaping symlinks and aggregate-limit violations. Old single-file fixtures remain valid without migration. Validate and compile work offline without Blender. Preview/render work on project input and report originating files for failures. Phase 7 includes a dedicated PLAN and CONTEXT; implementations must record verification evidence.
+
+## Phase 8 — Build and render selected shots independently
+
+**Status:** complete (2026-11-04). **Depends on:** 7. **Outcome:** a large project contains multiple shot entries; one selected shot resolves and builds without compiling or rendering all others.
+
+Tasks:
+1. Extend the project manifest with explicit shot IDs and entry files. Each shot owns its scene settings, camera and timeline; common modules are imported explicitly. Modules contain no implicit global mutable state.
+2. Add shot listing and explicit selection for validate, compile, preview and render. One-shot projects may select their sole shot by default; multi-shot projects require a selection or explicit all-shots mode. Document behavior before implementation.
+3. Validate manifest structure globally, then load and validate the selected shot's dependency closure. Missing/unresolved imports in an unselected shot do not block the selected shot; an explicit project-wide validation checks all shots.
+4. Produce isolated per-shot output directories and manifests. Record selected shot, relative source dependencies and content hashes, compiler/resources/environment and effective settings. Preserve immutable inputs across concurrent shot jobs.
+5. Ship a three-shot example reusing a shared module. Demonstrate bounded-context agent ownership: edit one shot file, build that shot, and verify unrelated shots' resolved data is unchanged.
+
+**Gate:** SHOT-01 through SHOT-03 pass. A selected shot resolves only its dependency closure, produces editable scene/frames and a dependency manifest, and does not launch Blender for other shots. Explicit all-project validation reports a deliberately broken unselected shot. Concurrent shot outputs remain isolated. A changed shared module affects all dependent shot hashes; an unrelated edit leaves the selected shot's resolved scene unchanged. No incremental cache, scheduler, video assembly or automatic all-shot rendering is required.
+
 ## Sequencing discipline
 
-Dependency chain: 0 → 1 → 2 → 3 → 4 → 5 → 6. Phase 0 resolves Blender/API uncertainty; Phase 1 establishes contracts; subsequent work expands a running product. Do not build MCP, a GUI, a provider abstraction, or RAG ahead of these gates.
+Executed baseline: 0 → 1 → 2 → 3 → 4 → 5 → 6, subject to recorded verification caveats. New implementation: 7 → 8. Preserve the existing RC and blocked model-evaluation claim while extending composition. Phase 7 adds a source-resolution layer over the working compiler; Phase 8 adds independent shot targets. Parameterized components and content-addressed build caching are deferred. Go, local/offline operation and no RAG remain fixed. Do not introduce MCP, a GUI, a provider abstraction, arbitrary code or retrieval infrastructure in these phases.

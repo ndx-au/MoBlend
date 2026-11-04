@@ -1,0 +1,14 @@
+{
+  "project_version": "1.0.0",
+  "kind": "project",
+  "entry": "good",
+  "modules": [
+    { "id": "good", "path": "good.entry.json" },
+    { "id": "bad", "path": "bad.entry.json" },
+    { "id": "missing_dep", "path": "nope.module.json" }
+  ],
+  "shots": [
+    { "id": "good", "entry": "good" },
+    { "id": "bad", "entry": "bad" }
+  ]
+}
